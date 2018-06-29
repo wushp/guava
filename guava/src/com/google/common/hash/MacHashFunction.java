@@ -28,101 +28,101 @@ import javax.crypto.Mac;
  * @author Kurt Alfred Kluever
  */
 final class MacHashFunction extends AbstractStreamingHashFunction {
-  private final Mac prototype;
-  private final Key key;
-  private final String toString;
-  private final int bits;
-  private final boolean supportsClone;
+    private final Mac prototype;
+    private final Key key;
+    private final String toString;
+    private final int bits;
+    private final boolean supportsClone;
 
-  MacHashFunction(String algorithmName, Key key, String toString) {
-    this.prototype = getMac(algorithmName, key);
-    this.key = checkNotNull(key);
-    this.toString = checkNotNull(toString);
-    this.bits = prototype.getMacLength() * Byte.SIZE;
-    this.supportsClone = supportsClone(prototype);
-  }
-
-  @Override
-  public int bits() {
-    return bits;
-  }
-
-  private static boolean supportsClone(Mac mac) {
-    try {
-      mac.clone();
-      return true;
-    } catch (CloneNotSupportedException e) {
-      return false;
-    }
-  }
-
-  private static Mac getMac(String algorithmName, Key key) {
-    try {
-      Mac mac = Mac.getInstance(algorithmName);
-      mac.init(key);
-      return mac;
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    } catch (InvalidKeyException e) {
-      throw new IllegalArgumentException(e);
-    }
-  }
-
-  @Override
-  public Hasher newHasher() {
-    if (supportsClone) {
-      try {
-        return new MacHasher((Mac) prototype.clone());
-      } catch (CloneNotSupportedException e) {
-        // falls through
-      }
-    }
-    return new MacHasher(getMac(prototype.getAlgorithm(), key));
-  }
-
-  @Override
-  public String toString() {
-    return toString;
-  }
-
-  /**
-   * Hasher that updates a {@link Mac} (message authentication code).
-   */
-  private static final class MacHasher extends AbstractByteHasher {
-    private final Mac mac;
-    private boolean done;
-
-    private MacHasher(Mac mac) {
-      this.mac = mac;
+    MacHashFunction(String algorithmName, Key key, String toString) {
+        this.prototype = getMac(algorithmName, key);
+        this.key = checkNotNull(key);
+        this.toString = checkNotNull(toString);
+        this.bits = prototype.getMacLength() * Byte.SIZE;
+        this.supportsClone = supportsClone(prototype);
     }
 
     @Override
-    protected void update(byte b) {
-      checkNotDone();
-      mac.update(b);
+    public int bits() {
+        return bits;
+    }
+
+    private static boolean supportsClone(Mac mac) {
+        try {
+            mac.clone();
+            return true;
+        } catch (CloneNotSupportedException e) {
+            return false;
+        }
+    }
+
+    private static Mac getMac(String algorithmName, Key key) {
+        try {
+            Mac mac = Mac.getInstance(algorithmName);
+            mac.init(key);
+            return mac;
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        } catch (InvalidKeyException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
-    protected void update(byte[] b) {
-      checkNotDone();
-      mac.update(b);
+    public Hasher newHasher() {
+        if (supportsClone) {
+            try {
+                return new MacHasher((Mac) prototype.clone());
+            } catch (CloneNotSupportedException e) {
+                // falls through
+            }
+        }
+        return new MacHasher(getMac(prototype.getAlgorithm(), key));
     }
 
     @Override
-    protected void update(byte[] b, int off, int len) {
-      checkNotDone();
-      mac.update(b, off, len);
+    public String toString() {
+        return toString;
     }
 
-    private void checkNotDone() {
-      checkState(!done, "Cannot re-use a Hasher after calling hash() on it");
-    }
+    /**
+     * Hasher that updates a {@link Mac} (message authentication code).
+     */
+    private static final class MacHasher extends AbstractByteHasher {
+        private final Mac mac;
+        private boolean done;
 
-    @Override
-    public HashCode hash() {
-      checkNotDone();
-      done = true;
-      return HashCode.fromBytesNoCopy(mac.doFinal());
+        private MacHasher(Mac mac) {
+            this.mac = mac;
+        }
+
+        @Override
+        protected void update(byte b) {
+            checkNotDone();
+            mac.update(b);
+        }
+
+        @Override
+        protected void update(byte[] b) {
+            checkNotDone();
+            mac.update(b);
+        }
+
+        @Override
+        protected void update(byte[] b, int off, int len) {
+            checkNotDone();
+            mac.update(b, off, len);
+        }
+
+        private void checkNotDone() {
+            checkState(!done, "Cannot re-use a Hasher after calling hash() on it");
+        }
+
+        @Override
+        public HashCode hash() {
+            checkNotDone();
+            done = true;
+            return HashCode.fromBytesNoCopy(mac.doFinal());
+        }
     }
-  }
 }

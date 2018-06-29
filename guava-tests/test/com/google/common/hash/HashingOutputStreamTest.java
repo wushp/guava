@@ -29,64 +29,63 @@ import junit.framework.TestCase;
  * @author Nick Piepmeier
  */
 public class HashingOutputStreamTest extends TestCase {
-  private Hasher hasher;
-  private HashFunction hashFunction;
-  private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    private Hasher hasher;
+    private HashFunction hashFunction;
+    private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    hasher = mock(Hasher.class);
-    hashFunction = mock(HashFunction.class);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        hasher = mock(Hasher.class);
+        hashFunction = mock(HashFunction.class);
 
-    when(hashFunction.newHasher()).thenReturn(hasher);
-  }
+        when(hashFunction.newHasher()).thenReturn(hasher);
+    }
 
-  public void testWrite_putSingleByte() throws Exception {
-    int b = 'q';
-    HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
-    out.write(b);
+    public void testWrite_putSingleByte() throws Exception {
+        int b = 'q';
+        HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
+        out.write(b);
 
-    verify(hashFunction).newHasher();
-    verify(hasher).putByte((byte) b);
-    verifyNoMoreInteractions(hashFunction, hasher);
-  }
+        verify(hashFunction).newHasher();
+        verify(hasher).putByte((byte) b);
+        verifyNoMoreInteractions(hashFunction, hasher);
+    }
 
-  public void testWrite_putByteArray() throws Exception {
-    byte[] buf = new byte[] {'y', 'a', 'm', 's'};
-    HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
-    out.write(buf);
+    public void testWrite_putByteArray() throws Exception {
+        byte[] buf = new byte[] {'y', 'a', 'm', 's'};
+        HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
+        out.write(buf);
 
-    verify(hashFunction).newHasher();
-    verify(hasher).putBytes(buf, 0, buf.length);
-    verifyNoMoreInteractions(hashFunction, hasher);
-  }
+        verify(hashFunction).newHasher();
+        verify(hasher).putBytes(buf, 0, buf.length);
+        verifyNoMoreInteractions(hashFunction, hasher);
+    }
 
-  public void testWrite_putByteArrayAtPos() throws Exception {
-    byte[] buf = new byte[] {'y', 'a', 'm', 's'};
-    HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
-    out.write(buf, 0, 3);
+    public void testWrite_putByteArrayAtPos() throws Exception {
+        byte[] buf = new byte[] {'y', 'a', 'm', 's'};
+        HashingOutputStream out = new HashingOutputStream(hashFunction, buffer);
+        out.write(buf, 0, 3);
 
-    verify(hashFunction).newHasher();
-    verify(hasher).putBytes(buf, 0, 3);
-    verifyNoMoreInteractions(hashFunction, hasher);
-  }
+        verify(hashFunction).newHasher();
+        verify(hasher).putBytes(buf, 0, 3);
+        verifyNoMoreInteractions(hashFunction, hasher);
+    }
 
-  public void testHash_hashesCorrectly() throws Exception {
-    byte[] buf = new byte[] {'y', 'a', 'm', 's'};
-    HashCode expectedHash = Hashing.md5().hashBytes(buf);
-    HashingOutputStream out = new HashingOutputStream(Hashing.md5(), buffer);
+    public void testHash_hashesCorrectly() throws Exception {
+        byte[] buf = new byte[] {'y', 'a', 'm', 's'};
+        HashCode expectedHash = Hashing.md5().hashBytes(buf);
+        HashingOutputStream out = new HashingOutputStream(Hashing.md5(), buffer);
 
-    out.write(buf);
+        out.write(buf);
 
-    assertEquals(expectedHash, out.hash());
-  }
+        assertEquals(expectedHash, out.hash());
+    }
 
-  public void testChecksForNull() throws Exception {
-    NullPointerTester tester = new NullPointerTester();
-    tester.testAllPublicInstanceMethods(
-        new HashingOutputStream(Hashing.md5(), new ByteArrayOutputStream()));
-    tester.testAllPublicStaticMethods(HashingOutputStream.class);
-    tester.testAllPublicConstructors(HashingOutputStream.class);
-  }
+    public void testChecksForNull() throws Exception {
+        NullPointerTester tester = new NullPointerTester();
+        tester.testAllPublicInstanceMethods(new HashingOutputStream(Hashing.md5(), new ByteArrayOutputStream()));
+        tester.testAllPublicStaticMethods(HashingOutputStream.class);
+        tester.testAllPublicConstructors(HashingOutputStream.class);
+    }
 }

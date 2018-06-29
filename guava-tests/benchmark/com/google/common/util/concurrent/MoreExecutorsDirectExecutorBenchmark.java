@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2014 The Guava Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.common.util.concurrent;
@@ -36,81 +34,92 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @VmOptions({"-Xms12g", "-Xmx12g", "-d64"})
 public class MoreExecutorsDirectExecutorBenchmark {
-  enum Impl {
-    EXECUTOR_SERVICE {
-      @Override Executor executor() {
-        return newDirectExecutorService();
-      }
-    },
-    EXECUTOR {
-      @Override Executor executor() {
-        return directExecutor();
-      }
-    };
-    abstract Executor executor();
-  }
-
-  @Param Impl impl;
-  Executor executor;
-
-  static final class CountingRunnable implements Runnable {
-    AtomicInteger integer = new AtomicInteger();
-    @Override public void run() {
-      integer.incrementAndGet();
+    enum Impl {
+        EXECUTOR_SERVICE {
+            @Override
+            Executor executor() {
+                return newDirectExecutorService();
+            }
+        },
+        EXECUTOR {
+            @Override
+            Executor executor() {
+                return directExecutor();
+            }
+        };
+        abstract Executor executor();
     }
-  }
 
-  CountingRunnable countingRunnable = new CountingRunnable();
+    @Param
+    Impl impl;
+    Executor executor;
 
-  Set<Thread> threads = new HashSet<Thread>();
+    static final class CountingRunnable implements Runnable {
+        AtomicInteger integer = new AtomicInteger();
 
-  @BeforeExperiment void before() {
-    executor = impl.executor();
-    for (int i = 0; i < 4; i++) {
-      Thread thread = new Thread() {
-        @Override public void run() {
-          CountingRunnable localRunnable = new CountingRunnable();
-          while (!isInterrupted()) {
-            executor.execute(localRunnable);
-          }
-          countingRunnable.integer.addAndGet(localRunnable.integer.get());
+        @Override
+        public void run() {
+            integer.incrementAndGet();
         }
-      };
-      threads.add(thread);
     }
-  }
 
-  @AfterExperiment void after() {
-    for (Thread thread : threads) {
-      thread.interrupt();  // try to get them to exit
-    }
-    threads.clear();
-  }
+    CountingRunnable countingRunnable = new CountingRunnable();
 
-  @Footprint Object measureSize() {
-    return executor;
-  }
+    Set<Thread> threads = new HashSet<Thread>();
 
-  @Benchmark int timeUncontendedExecute(int reps) {
-    final Executor executor = this.executor;
-    final CountingRunnable countingRunnable = this.countingRunnable;
-    for (int i = 0; i < reps; i++) {
-      executor.execute(countingRunnable);
+    @BeforeExperiment
+    void before() {
+        executor = impl.executor();
+        for (int i = 0; i < 4; i++) {
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    CountingRunnable localRunnable = new CountingRunnable();
+                    while (!isInterrupted()) {
+                        executor.execute(localRunnable);
+                    }
+                    countingRunnable.integer.addAndGet(localRunnable.integer.get());
+                }
+            };
+            threads.add(thread);
+        }
     }
-    return countingRunnable.integer.get();
-  }
 
-  @Benchmark int timeContendedExecute(int reps) {
-    final Executor executor = this.executor;
-    for (Thread thread : threads) {
-      if (!thread.isAlive()) {
-        thread.start();
-      }
+    @AfterExperiment
+    void after() {
+        for (Thread thread : threads) {
+            thread.interrupt(); // try to get them to exit
+        }
+        threads.clear();
     }
-    final CountingRunnable countingRunnable = this.countingRunnable;
-    for (int i = 0; i < reps; i++) {
-      executor.execute(countingRunnable);
+
+    @Footprint
+    Object measureSize() {
+        return executor;
     }
-    return countingRunnable.integer.get();
-  }
+
+    @Benchmark
+    int timeUncontendedExecute(int reps) {
+        final Executor executor = this.executor;
+        final CountingRunnable countingRunnable = this.countingRunnable;
+        for (int i = 0; i < reps; i++) {
+            executor.execute(countingRunnable);
+        }
+        return countingRunnable.integer.get();
+    }
+
+    @Benchmark
+    int timeContendedExecute(int reps) {
+        final Executor executor = this.executor;
+        for (Thread thread : threads) {
+            if (!thread.isAlive()) {
+                thread.start();
+            }
+        }
+        final CountingRunnable countingRunnable = this.countingRunnable;
+        for (int i = 0; i < reps; i++) {
+            executor.execute(countingRunnable);
+        }
+        return countingRunnable.integer.get();
+    }
 }

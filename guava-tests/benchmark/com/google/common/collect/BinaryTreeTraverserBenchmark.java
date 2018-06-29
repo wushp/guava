@@ -29,162 +29,160 @@ import java.util.Random;
  * @author Louis Wasserman
  */
 public class BinaryTreeTraverserBenchmark {
-  private static class BinaryNode {
-    final int x;
-    final Optional<BinaryNode> left;
-    final Optional<BinaryNode> right;
+    private static class BinaryNode {
+        final int x;
+        final Optional<BinaryNode> left;
+        final Optional<BinaryNode> right;
 
-    BinaryNode(int x, Optional<BinaryNode> left, Optional<BinaryNode> right) {
-      this.x = x;
-      this.left = left;
-      this.right = right;
+        BinaryNode(int x, Optional<BinaryNode> left, Optional<BinaryNode> right) {
+            this.x = x;
+            this.left = left;
+            this.right = right;
+        }
     }
-  }
 
-  enum Topology {
-    BALANCED {
-      @Override
-      Optional<BinaryNode> createTree(int size, Random rng) {
-        if (size == 0) {
-          return Optional.absent();
-        } else {
-          int leftChildSize = (size - 1) / 2;
-          int rightChildSize = size - 1 - leftChildSize;
-          return Optional.of(new BinaryNode(
-              rng.nextInt(), createTree(leftChildSize, rng), createTree(rightChildSize, rng)));
-        }
-      }
-    },
-    ALL_LEFT {
-      @Override
-      Optional<BinaryNode> createTree(int size, Random rng) {
-        Optional<BinaryNode> root = Optional.absent();
-        for (int i = 0; i < size; i++) {
-          root = Optional.of(new BinaryNode(rng.nextInt(), root, Optional.<BinaryNode>absent()));
-        }
-        return root;
-      }
-    },
-    ALL_RIGHT {
-      @Override
-      Optional<BinaryNode> createTree(int size, Random rng) {
-        Optional<BinaryNode> root = Optional.absent();
-        for (int i = 0; i < size; i++) {
-          root = Optional.of(new BinaryNode(rng.nextInt(), Optional.<BinaryNode>absent(), root));
-        }
-        return root;
-      }
-    },
-    RANDOM {
-      /**
-       * Generates a tree with topology selected uniformly at random from the topologies of binary
-       * trees of the specified size.
-       */
-      @Override
-      Optional<BinaryNode> createTree(int size, Random rng) {
-        int[] keys = new int[size];
-        for (int i = 0; i < size; i++) {
-          keys[i] = rng.nextInt();
-        }
-        return createTreap(Ints.asList(keys));
-      }
+    enum Topology {
+        BALANCED {
+            @Override
+            Optional<BinaryNode> createTree(int size, Random rng) {
+                if (size == 0) {
+                    return Optional.absent();
+                } else {
+                    int leftChildSize = (size - 1) / 2;
+                    int rightChildSize = size - 1 - leftChildSize;
+                    return Optional.of(new BinaryNode(rng.nextInt(), createTree(leftChildSize, rng),
+                            createTree(rightChildSize, rng)));
+                }
+            }
+        },
+        ALL_LEFT {
+            @Override
+            Optional<BinaryNode> createTree(int size, Random rng) {
+                Optional<BinaryNode> root = Optional.absent();
+                for (int i = 0; i < size; i++) {
+                    root = Optional.of(new BinaryNode(rng.nextInt(), root, Optional.<BinaryNode>absent()));
+                }
+                return root;
+            }
+        },
+        ALL_RIGHT {
+            @Override
+            Optional<BinaryNode> createTree(int size, Random rng) {
+                Optional<BinaryNode> root = Optional.absent();
+                for (int i = 0; i < size; i++) {
+                    root = Optional.of(new BinaryNode(rng.nextInt(), Optional.<BinaryNode>absent(), root));
+                }
+                return root;
+            }
+        },
+        RANDOM {
+            /**
+             * Generates a tree with topology selected uniformly at random from the topologies of
+             * binary trees of the specified size.
+             */
+            @Override
+            Optional<BinaryNode> createTree(int size, Random rng) {
+                int[] keys = new int[size];
+                for (int i = 0; i < size; i++) {
+                    keys[i] = rng.nextInt();
+                }
+                return createTreap(Ints.asList(keys));
+            }
 
-      // See http://en.wikipedia.org/wiki/Treap for details on the algorithm.
-      private Optional<BinaryNode> createTreap(List<Integer> keys) {
-        if (keys.isEmpty()) {
-          return Optional.absent();
+            // See http://en.wikipedia.org/wiki/Treap for details on the algorithm.
+            private Optional<BinaryNode> createTreap(List<Integer> keys) {
+                if (keys.isEmpty()) {
+                    return Optional.absent();
+                }
+                int minIndex = 0;
+                for (int i = 1; i < keys.size(); i++) {
+                    if (keys.get(i) < keys.get(minIndex)) {
+                        minIndex = i;
+                    }
+                }
+                Optional<BinaryNode> leftChild = createTreap(keys.subList(0, minIndex));
+                Optional<BinaryNode> rightChild = createTreap(keys.subList(minIndex + 1, keys.size()));
+                return Optional.of(new BinaryNode(keys.get(minIndex), leftChild, rightChild));
+            }
+        };
+
+        abstract Optional<BinaryNode> createTree(int size, Random rng);
+    }
+
+    private static final BinaryTreeTraverser<BinaryNode> BINARY_VIEWER = new BinaryTreeTraverser<BinaryNode>() {
+
+        @Override
+        public Optional<BinaryNode> leftChild(BinaryNode node) {
+            return node.left;
         }
-        int minIndex = 0;
-        for (int i = 1; i < keys.size(); i++) {
-          if (keys.get(i) < keys.get(minIndex)) {
-            minIndex = i;
-          }
+
+        @Override
+        public Optional<BinaryNode> rightChild(BinaryNode node) {
+            return node.right;
         }
-        Optional<BinaryNode> leftChild = createTreap(keys.subList(0, minIndex));
-        Optional<BinaryNode> rightChild = createTreap(keys.subList(minIndex + 1, keys.size()));
-        return Optional.of(new BinaryNode(keys.get(minIndex), leftChild, rightChild));
-      }
     };
 
-    abstract Optional<BinaryNode> createTree(int size, Random rng);
-  }
-
-  private static final BinaryTreeTraverser<BinaryNode> BINARY_VIEWER =
-      new BinaryTreeTraverser<BinaryNode>() {
-
-    @Override
-    public Optional<BinaryNode> leftChild(BinaryNode node) {
-      return node.left;
-    }
-
-    @Override
-    public Optional<BinaryNode> rightChild(BinaryNode node) {
-      return node.right;
-    }
-  };
-
-  private static final TreeTraverser<BinaryNode> VIEWER = new TreeTraverser<BinaryNode>() {
-    @Override
-    public Iterable<BinaryNode> children(BinaryNode root) {
-      return BINARY_VIEWER.children(root);
-    }
-  };
-
-  enum Traversal {
-    PRE_ORDER {
-      @Override
-      <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
-        return viewer.preOrderTraversal(root);
-      }
-    },
-    POST_ORDER {
-      @Override
-      <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
-        return viewer.postOrderTraversal(root);
-      }
-    },
-    BREADTH_FIRST {
-      @Override
-      <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
-        return viewer.breadthFirstTraversal(root);
-      }
+    private static final TreeTraverser<BinaryNode> VIEWER = new TreeTraverser<BinaryNode>() {
+        @Override
+        public Iterable<BinaryNode> children(BinaryNode root) {
+            return BINARY_VIEWER.children(root);
+        }
     };
 
-    abstract <T> Iterable<T> view(T root, TreeTraverser<T> viewer);
-  }
+    enum Traversal {
+        PRE_ORDER {
+            @Override
+            <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
+                return viewer.preOrderTraversal(root);
+            }
+        },
+        POST_ORDER {
+            @Override
+            <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
+                return viewer.postOrderTraversal(root);
+            }
+        },
+        BREADTH_FIRST {
+            @Override
+            <T> Iterable<T> view(T root, TreeTraverser<T> viewer) {
+                return viewer.breadthFirstTraversal(root);
+            }
+        };
 
-  private Iterable<BinaryNode> view;
-
-  @Param
-  Topology topology;
-
-  @Param({"1", "100", "10000", "1000000"})
-  int size;
-
-  @Param
-  Traversal traversal;
-
-  @Param
-  boolean useBinaryTraverser;
-
-  @Param({"1234"})
-  SpecialRandom rng;
-
-  @BeforeExperiment
-  void setUp() {
-    this.view = traversal.view(
-        topology.createTree(size, rng).get(),
-        useBinaryTraverser ? BINARY_VIEWER : VIEWER);
-  }
-
-  @Benchmark int traversal(int reps) {
-    int tmp = 0;
-
-    for (int i = 0; i < reps; i++) {
-      for (BinaryNode node : view) {
-        tmp += node.x;
-      }
+        abstract <T> Iterable<T> view(T root, TreeTraverser<T> viewer);
     }
-    return tmp;
-  }
+
+    private Iterable<BinaryNode> view;
+
+    @Param
+    Topology topology;
+
+    @Param({"1", "100", "10000", "1000000"})
+    int size;
+
+    @Param
+    Traversal traversal;
+
+    @Param
+    boolean useBinaryTraverser;
+
+    @Param({"1234"})
+    SpecialRandom rng;
+
+    @BeforeExperiment
+    void setUp() {
+        this.view = traversal.view(topology.createTree(size, rng).get(), useBinaryTraverser ? BINARY_VIEWER : VIEWER);
+    }
+
+    @Benchmark
+    int traversal(int reps) {
+        int tmp = 0;
+
+        for (int i = 0; i < reps; i++) {
+            for (BinaryNode node : view) {
+                tmp += node.x;
+            }
+        }
+        return tmp;
+    }
 }

@@ -30,52 +30,53 @@ import java.util.logging.Logger;
  */
 @GwtIncompatible
 public final class UncaughtExceptionHandlers {
-  private UncaughtExceptionHandlers() {}
+    private UncaughtExceptionHandlers() {}
 
-  /**
-   * Returns an exception handler that exits the system. This is particularly useful for the main
-   * thread, which may start up other, non-daemon threads, but fail to fully initialize the
-   * application successfully.
-   *
-   * <p>Example usage:
-   *
-   * <pre>
-   * public static void main(String[] args) {
-   *   Thread.currentThread().setUncaughtExceptionHandler(UncaughtExceptionHandlers.systemExit());
-   *   ...
-   * </pre>
-   *
-   * <p>The returned handler logs any exception at severity {@code SEVERE} and then shuts down the
-   * process with an exit status of 1, indicating abnormal termination.
-   */
-  public static UncaughtExceptionHandler systemExit() {
-    return new Exiter(Runtime.getRuntime());
-  }
-
-  @VisibleForTesting
-  static final class Exiter implements UncaughtExceptionHandler {
-    private static final Logger logger = Logger.getLogger(Exiter.class.getName());
-
-    private final Runtime runtime;
-
-    Exiter(Runtime runtime) {
-      this.runtime = runtime;
+    /**
+     * Returns an exception handler that exits the system. This is particularly useful for the main
+     * thread, which may start up other, non-daemon threads, but fail to fully initialize the
+     * application successfully.
+     *
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * public static void main(String[] args) {
+     *   Thread.currentThread().setUncaughtExceptionHandler(UncaughtExceptionHandlers.systemExit());
+     *   ...
+     * </pre>
+     *
+     * <p>
+     * The returned handler logs any exception at severity {@code SEVERE} and then shuts down the
+     * process with an exit status of 1, indicating abnormal termination.
+     */
+    public static UncaughtExceptionHandler systemExit() {
+        return new Exiter(Runtime.getRuntime());
     }
 
-    @Override
-    public void uncaughtException(Thread t, Throwable e) {
-      try {
-        // cannot use FormattingLogger due to a dependency loop
-        logger.log(
-            SEVERE, String.format(Locale.ROOT, "Caught an exception in %s.  Shutting down.", t), e);
-      } catch (Throwable errorInLogging) {
-        // If logging fails, e.g. due to missing memory, at least try to log the
-        // message and the cause for the failed logging.
-        System.err.println(e.getMessage());
-        System.err.println(errorInLogging.getMessage());
-      } finally {
-        runtime.exit(1);
-      }
+    @VisibleForTesting
+    static final class Exiter implements UncaughtExceptionHandler {
+        private static final Logger logger = Logger.getLogger(Exiter.class.getName());
+
+        private final Runtime runtime;
+
+        Exiter(Runtime runtime) {
+            this.runtime = runtime;
+        }
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            try {
+                // cannot use FormattingLogger due to a dependency loop
+                logger.log(SEVERE, String.format(Locale.ROOT, "Caught an exception in %s.  Shutting down.", t), e);
+            } catch (Throwable errorInLogging) {
+                // If logging fails, e.g. due to missing memory, at least try to log the
+                // message and the cause for the failed logging.
+                System.err.println(e.getMessage());
+                System.err.println(errorInLogging.getMessage());
+            } finally {
+                runtime.exit(1);
+            }
+        }
     }
-  }
 }

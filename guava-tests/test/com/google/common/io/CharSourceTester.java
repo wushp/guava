@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2012 The Guava Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.common.io;
@@ -42,181 +40,177 @@ import junit.framework.TestSuite;
 @AndroidIncompatible // Android doesn't understand tests that lack default constructors.
 public class CharSourceTester extends SourceSinkTester<CharSource, String, CharSourceFactory> {
 
-  private static final ImmutableList<Method> testMethods
-      = getTestMethods(CharSourceTester.class);
+    private static final ImmutableList<Method> testMethods = getTestMethods(CharSourceTester.class);
 
-  static TestSuite tests(String name, CharSourceFactory factory, boolean testAsByteSource) {
-    TestSuite suite = new TestSuite(name);
-    for (Map.Entry<String, String> entry : TEST_STRINGS.entrySet()) {
-      if (testAsByteSource) {
-        suite.addTest(suiteForBytes(factory,
-            entry.getValue().getBytes(Charsets.UTF_8), name, entry.getKey(), true));
-      } else {
-        suite.addTest(suiteForString(factory, entry.getValue(), name, entry.getKey()));
-      }
+    static TestSuite tests(String name, CharSourceFactory factory, boolean testAsByteSource) {
+        TestSuite suite = new TestSuite(name);
+        for (Map.Entry<String, String> entry : TEST_STRINGS.entrySet()) {
+            if (testAsByteSource) {
+                suite.addTest(
+                        suiteForBytes(factory, entry.getValue().getBytes(Charsets.UTF_8), name, entry.getKey(), true));
+            } else {
+                suite.addTest(suiteForString(factory, entry.getValue(), name, entry.getKey()));
+            }
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  static TestSuite suiteForBytes(CharSourceFactory factory, byte[] bytes,
-      String name, String desc, boolean slice) {
-    TestSuite suite = suiteForString(
-        factory, new String(bytes, Charsets.UTF_8), name, desc);
-    ByteSourceFactory byteSourceFactory = SourceSinkFactories.asByteSourceFactory(factory);
-    suite.addTest(ByteSourceTester.suiteForBytes(byteSourceFactory, bytes,
-        name + ".asByteSource[Charset]", desc, slice));
-    return suite;
-  }
-
-  static TestSuite suiteForString(CharSourceFactory factory, String string,
-      String name, String desc) {
-    TestSuite suite = new TestSuite(name + " [" + desc + "]");
-    for (Method method : testMethods) {
-      suite.addTest(new CharSourceTester(factory, string, name, desc, method));
+    static TestSuite suiteForBytes(CharSourceFactory factory, byte[] bytes, String name, String desc, boolean slice) {
+        TestSuite suite = suiteForString(factory, new String(bytes, Charsets.UTF_8), name, desc);
+        ByteSourceFactory byteSourceFactory = SourceSinkFactories.asByteSourceFactory(factory);
+        suite.addTest(
+                ByteSourceTester.suiteForBytes(byteSourceFactory, bytes, name + ".asByteSource[Charset]", desc, slice));
+        return suite;
     }
-    return suite;
-  }
 
-  private final ImmutableList<String> expectedLines;
-
-  private CharSource source;
-
-  public CharSourceTester(CharSourceFactory factory, String string,
-      String suiteName, String caseDesc, Method method) {
-    super(factory, string, suiteName, caseDesc, method);
-    this.expectedLines = getLines(expected);
-  }
-
-  @Override
-  protected void setUp() throws Exception {
-    this.source = factory.createSource(data);
-  }
-
-  public void testOpenStream() throws IOException {
-    Reader reader = source.openStream();
-
-    StringWriter writer = new StringWriter();
-    char[] buf = new char[64];
-    int read;
-    while ((read = reader.read(buf)) != -1) {
-      writer.write(buf, 0, read);
+    static TestSuite suiteForString(CharSourceFactory factory, String string, String name, String desc) {
+        TestSuite suite = new TestSuite(name + " [" + desc + "]");
+        for (Method method : testMethods) {
+            suite.addTest(new CharSourceTester(factory, string, name, desc, method));
+        }
+        return suite;
     }
-    reader.close();
-    writer.close();
 
-    assertExpectedString(writer.toString());
-  }
+    private final ImmutableList<String> expectedLines;
 
-  public void testOpenBufferedStream() throws IOException {
-    BufferedReader reader = source.openBufferedStream();
+    private CharSource source;
 
-    StringWriter writer = new StringWriter();
-    char[] buf = new char[64];
-    int read;
-    while ((read = reader.read(buf)) != -1) {
-      writer.write(buf, 0, read);
+    public CharSourceTester(CharSourceFactory factory, String string, String suiteName, String caseDesc,
+            Method method) {
+        super(factory, string, suiteName, caseDesc, method);
+        this.expectedLines = getLines(expected);
     }
-    reader.close();
-    writer.close();
 
-    assertExpectedString(writer.toString());
-  }
-
-  public void testCopyTo_appendable() throws IOException {
-    StringBuilder builder = new StringBuilder();
-
-    assertEquals(expected.length(), source.copyTo(builder));
-
-    assertExpectedString(builder.toString());
-  }
-
-  public void testCopyTo_charSink() throws IOException {
-    TestCharSink sink = new TestCharSink();
-
-    assertEquals(expected.length(), source.copyTo(sink));
-
-    assertExpectedString(sink.getString());
-  }
-
-  public void testRead_toString() throws IOException {
-    String string = source.read();
-    assertExpectedString(string);
-  }
-
-  public void testReadFirstLine() throws IOException {
-    if (expectedLines.isEmpty()) {
-      assertNull(source.readFirstLine());
-    } else {
-      assertEquals(expectedLines.get(0), source.readFirstLine());
+    @Override
+    protected void setUp() throws Exception {
+        this.source = factory.createSource(data);
     }
-  }
 
-  public void testReadLines_toList() throws IOException {
-    assertExpectedLines(source.readLines());
-  }
+    public void testOpenStream() throws IOException {
+        Reader reader = source.openStream();
 
-  public void testIsEmpty() throws IOException {
-    assertEquals(expected.isEmpty(), source.isEmpty());
-  }
+        StringWriter writer = new StringWriter();
+        char[] buf = new char[64];
+        int read;
+        while ((read = reader.read(buf)) != -1) {
+            writer.write(buf, 0, read);
+        }
+        reader.close();
+        writer.close();
 
-  public void testLength() throws IOException {
-    assertEquals(expected.length(), source.length());
-  }
-
-  public void testLengthIfKnown() throws IOException {
-    Optional<Long> lengthIfKnown = source.lengthIfKnown();
-    if (lengthIfKnown.isPresent()) {
-      assertEquals(expected.length(), (long) lengthIfKnown.get());
+        assertExpectedString(writer.toString());
     }
-  }
 
-  public void testReadLines_withProcessor() throws IOException {
-    List<String> list = source.readLines(new LineProcessor<List<String>>() {
-      List<String> list = Lists.newArrayList();
+    public void testOpenBufferedStream() throws IOException {
+        BufferedReader reader = source.openBufferedStream();
 
-      @Override
-      public boolean processLine(String line) throws IOException {
-        list.add(line);
-        return true;
-      }
+        StringWriter writer = new StringWriter();
+        char[] buf = new char[64];
+        int read;
+        while ((read = reader.read(buf)) != -1) {
+            writer.write(buf, 0, read);
+        }
+        reader.close();
+        writer.close();
 
-      @Override
-      public List<String> getResult() {
-        return list;
-      }
-    });
-
-    assertExpectedLines(list);
-  }
-
-  public void testReadLines_withProcessor_stopsOnFalse() throws IOException {
-    List<String> list = source.readLines(new LineProcessor<List<String>>() {
-      List<String> list = Lists.newArrayList();
-
-      @Override
-      public boolean processLine(String line) throws IOException {
-        list.add(line);
-        return false;
-      }
-
-      @Override
-      public List<String> getResult() {
-        return list;
-      }
-    });
-
-    if (expectedLines.isEmpty()) {
-      assertTrue(list.isEmpty());
-    } else {
-      assertEquals(expectedLines.subList(0, 1), list);
+        assertExpectedString(writer.toString());
     }
-  }
 
-  private void assertExpectedString(String string) {
-    assertEquals(expected, string);
-  }
+    public void testCopyTo_appendable() throws IOException {
+        StringBuilder builder = new StringBuilder();
 
-  private void assertExpectedLines(List<String> list) {
-    assertEquals(expectedLines, list);
-  }
+        assertEquals(expected.length(), source.copyTo(builder));
+
+        assertExpectedString(builder.toString());
+    }
+
+    public void testCopyTo_charSink() throws IOException {
+        TestCharSink sink = new TestCharSink();
+
+        assertEquals(expected.length(), source.copyTo(sink));
+
+        assertExpectedString(sink.getString());
+    }
+
+    public void testRead_toString() throws IOException {
+        String string = source.read();
+        assertExpectedString(string);
+    }
+
+    public void testReadFirstLine() throws IOException {
+        if (expectedLines.isEmpty()) {
+            assertNull(source.readFirstLine());
+        } else {
+            assertEquals(expectedLines.get(0), source.readFirstLine());
+        }
+    }
+
+    public void testReadLines_toList() throws IOException {
+        assertExpectedLines(source.readLines());
+    }
+
+    public void testIsEmpty() throws IOException {
+        assertEquals(expected.isEmpty(), source.isEmpty());
+    }
+
+    public void testLength() throws IOException {
+        assertEquals(expected.length(), source.length());
+    }
+
+    public void testLengthIfKnown() throws IOException {
+        Optional<Long> lengthIfKnown = source.lengthIfKnown();
+        if (lengthIfKnown.isPresent()) {
+            assertEquals(expected.length(), (long) lengthIfKnown.get());
+        }
+    }
+
+    public void testReadLines_withProcessor() throws IOException {
+        List<String> list = source.readLines(new LineProcessor<List<String>>() {
+            List<String> list = Lists.newArrayList();
+
+            @Override
+            public boolean processLine(String line) throws IOException {
+                list.add(line);
+                return true;
+            }
+
+            @Override
+            public List<String> getResult() {
+                return list;
+            }
+        });
+
+        assertExpectedLines(list);
+    }
+
+    public void testReadLines_withProcessor_stopsOnFalse() throws IOException {
+        List<String> list = source.readLines(new LineProcessor<List<String>>() {
+            List<String> list = Lists.newArrayList();
+
+            @Override
+            public boolean processLine(String line) throws IOException {
+                list.add(line);
+                return false;
+            }
+
+            @Override
+            public List<String> getResult() {
+                return list;
+            }
+        });
+
+        if (expectedLines.isEmpty()) {
+            assertTrue(list.isEmpty());
+        } else {
+            assertEquals(expectedLines.subList(0, 1), list);
+        }
+    }
+
+    private void assertExpectedString(String string) {
+        assertEquals(expected, string);
+    }
+
+    private void assertExpectedLines(List<String> list) {
+        assertEquals(expectedLines, list);
+    }
 }

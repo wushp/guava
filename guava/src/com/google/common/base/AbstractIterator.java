@@ -28,64 +28,61 @@ import javax.annotation.Nullable;
  */
 @GwtCompatible
 abstract class AbstractIterator<T> implements Iterator<T> {
-  private State state = State.NOT_READY;
+    private State state = State.NOT_READY;
 
-  protected AbstractIterator() {}
+    protected AbstractIterator() {}
 
-  private enum State {
-    READY,
-    NOT_READY,
-    DONE,
-    FAILED,
-  }
+    private enum State {
+        READY, NOT_READY, DONE, FAILED,
+    }
 
-  private T next;
+    private T next;
 
-  protected abstract T computeNext();
+    protected abstract T computeNext();
 
-  @Nullable
-  @CanIgnoreReturnValue
-  protected final T endOfData() {
-    state = State.DONE;
-    return null;
-  }
+    @Nullable
+    @CanIgnoreReturnValue
+    protected final T endOfData() {
+        state = State.DONE;
+        return null;
+    }
 
-  @Override
-  public final boolean hasNext() {
-    checkState(state != State.FAILED);
-    switch (state) {
-      case READY:
-        return true;
-      case DONE:
+    @Override
+    public final boolean hasNext() {
+        checkState(state != State.FAILED);
+        switch (state) {
+            case READY:
+                return true;
+            case DONE:
+                return false;
+            default:
+        }
+        return tryToComputeNext();
+    }
+
+    private boolean tryToComputeNext() {
+        state = State.FAILED; // temporary pessimism
+        next = computeNext();
+        if (state != State.DONE) {
+            state = State.READY;
+            return true;
+        }
         return false;
-      default:
     }
-    return tryToComputeNext();
-  }
 
-  private boolean tryToComputeNext() {
-    state = State.FAILED; // temporary pessimism
-    next = computeNext();
-    if (state != State.DONE) {
-      state = State.READY;
-      return true;
+    @Override
+    public final T next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        state = State.NOT_READY;
+        T result = next;
+        next = null;
+        return result;
     }
-    return false;
-  }
 
-  @Override
-  public final T next() {
-    if (!hasNext()) {
-      throw new NoSuchElementException();
+    @Override
+    public final void remove() {
+        throw new UnsupportedOperationException();
     }
-    state = State.NOT_READY;
-    T result = next;
-    next = null;
-    return result;
-  }
-
-  @Override
-  public final void remove() {
-    throw new UnsupportedOperationException();
-  }
 }

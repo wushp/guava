@@ -30,78 +30,79 @@ import java.io.InputStream;
  */
 @Beta
 public final class HashingInputStream extends FilterInputStream {
-  private final Hasher hasher;
+    private final Hasher hasher;
 
-  /**
-   * Creates an input stream that hashes using the given {@link HashFunction} and delegates all data
-   * read from it to the underlying {@link InputStream}.
-   *
-   * <p>The {@link InputStream} should not be read from before or after the hand-off.
-   */
-  public HashingInputStream(HashFunction hashFunction, InputStream in) {
-    super(checkNotNull(in));
-    this.hasher = checkNotNull(hashFunction.newHasher());
-  }
-
-  /**
-   * Reads the next byte of data from the underlying input stream and updates the hasher with the
-   * byte read.
-   */
-  @Override
-  @CanIgnoreReturnValue
-  public int read() throws IOException {
-    int b = in.read();
-    if (b != -1) {
-      hasher.putByte((byte) b);
+    /**
+     * Creates an input stream that hashes using the given {@link HashFunction} and delegates all
+     * data read from it to the underlying {@link InputStream}.
+     *
+     * <p>
+     * The {@link InputStream} should not be read from before or after the hand-off.
+     */
+    public HashingInputStream(HashFunction hashFunction, InputStream in) {
+        super(checkNotNull(in));
+        this.hasher = checkNotNull(hashFunction.newHasher());
     }
-    return b;
-  }
 
-  /**
-   * Reads the specified bytes of data from the underlying input stream and updates the hasher with
-   * the bytes read.
-   */
-  @Override
-  @CanIgnoreReturnValue
-  public int read(byte[] bytes, int off, int len) throws IOException {
-    int numOfBytesRead = in.read(bytes, off, len);
-    if (numOfBytesRead != -1) {
-      hasher.putBytes(bytes, off, numOfBytesRead);
+    /**
+     * Reads the next byte of data from the underlying input stream and updates the hasher with the
+     * byte read.
+     */
+    @Override
+    @CanIgnoreReturnValue
+    public int read() throws IOException {
+        int b = in.read();
+        if (b != -1) {
+            hasher.putByte((byte) b);
+        }
+        return b;
     }
-    return numOfBytesRead;
-  }
 
-  /**
-   * mark() is not supported for HashingInputStream
-   *
-   * @return {@code false} always
-   */
-  @Override
-  public boolean markSupported() {
-    return false;
-  }
+    /**
+     * Reads the specified bytes of data from the underlying input stream and updates the hasher
+     * with the bytes read.
+     */
+    @Override
+    @CanIgnoreReturnValue
+    public int read(byte[] bytes, int off, int len) throws IOException {
+        int numOfBytesRead = in.read(bytes, off, len);
+        if (numOfBytesRead != -1) {
+            hasher.putBytes(bytes, off, numOfBytesRead);
+        }
+        return numOfBytesRead;
+    }
 
-  /**
-   * mark() is not supported for HashingInputStream
-   */
-  @Override
-  public void mark(int readlimit) {}
+    /**
+     * mark() is not supported for HashingInputStream
+     *
+     * @return {@code false} always
+     */
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
 
-  /**
-   * reset() is not supported for HashingInputStream.
-   *
-   * @throws IOException this operation is not supported
-   */
-  @Override
-  public void reset() throws IOException {
-    throw new IOException("reset not supported");
-  }
+    /**
+     * mark() is not supported for HashingInputStream
+     */
+    @Override
+    public void mark(int readlimit) {}
 
-  /**
-   * Returns the {@link HashCode} based on the data read from this stream. The result is unspecified
-   * if this method is called more than once on the same instance.
-   */
-  public HashCode hash() {
-    return hasher.hash();
-  }
+    /**
+     * reset() is not supported for HashingInputStream.
+     *
+     * @throws IOException this operation is not supported
+     */
+    @Override
+    public void reset() throws IOException {
+        throw new IOException("reset not supported");
+    }
+
+    /**
+     * Returns the {@link HashCode} based on the data read from this stream. The result is
+     * unspecified if this method is called more than once on the same instance.
+     */
+    public HashCode hash() {
+        return hasher.hash();
+    }
 }

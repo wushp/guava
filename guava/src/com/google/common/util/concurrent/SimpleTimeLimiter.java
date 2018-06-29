@@ -46,146 +46,138 @@ import java.util.concurrent.TimeoutException;
 @GwtIncompatible
 public final class SimpleTimeLimiter implements TimeLimiter {
 
-  private final ExecutorService executor;
+    private final ExecutorService executor;
 
-  /**
-   * Constructs a TimeLimiter instance using the given executor service to execute proxied method
-   * calls.
-   *
-   * <p><b>Warning:</b> using a bounded executor may be counterproductive! If the thread pool fills
-   * up, any time callers spend waiting for a thread may count toward their time limit, and in this
-   * case the call may even time out before the target method is ever invoked.
-   *
-   * @param executor the ExecutorService that will execute the method calls on the target objects;
-   *     for example, a {@link Executors#newCachedThreadPool()}.
-   */
-  public SimpleTimeLimiter(ExecutorService executor) {
-    this.executor = checkNotNull(executor);
-  }
+    /**
+     * Constructs a TimeLimiter instance using the given executor service to execute proxied method
+     * calls.
+     *
+     * <p>
+     * <b>Warning:</b> using a bounded executor may be counterproductive! If the thread pool fills
+     * up, any time callers spend waiting for a thread may count toward their time limit, and in
+     * this case the call may even time out before the target method is ever invoked.
+     *
+     * @param executor the ExecutorService that will execute the method calls on the target objects;
+     *        for example, a {@link Executors#newCachedThreadPool()}.
+     */
+    public SimpleTimeLimiter(ExecutorService executor) {
+        this.executor = checkNotNull(executor);
+    }
 
-  /**
-   * Constructs a TimeLimiter instance using a {@link Executors#newCachedThreadPool()} to execute
-   * proxied method calls.
-   *
-   * <p><b>Warning:</b> using a bounded executor may be counterproductive! If the thread pool fills
-   * up, any time callers spend waiting for a thread may count toward their time limit, and in this
-   * case the call may even time out before the target method is ever invoked.
-   */
-  public SimpleTimeLimiter() {
-    this(Executors.newCachedThreadPool());
-  }
+    /**
+     * Constructs a TimeLimiter instance using a {@link Executors#newCachedThreadPool()} to execute
+     * proxied method calls.
+     *
+     * <p>
+     * <b>Warning:</b> using a bounded executor may be counterproductive! If the thread pool fills
+     * up, any time callers spend waiting for a thread may count toward their time limit, and in
+     * this case the call may even time out before the target method is ever invoked.
+     */
+    public SimpleTimeLimiter() {
+        this(Executors.newCachedThreadPool());
+    }
 
-  @Override
-  public <T> T newProxy(
-      final T target,
-      Class<T> interfaceType,
-      final long timeoutDuration,
-      final TimeUnit timeoutUnit) {
-    checkNotNull(target);
-    checkNotNull(interfaceType);
-    checkNotNull(timeoutUnit);
-    checkArgument(timeoutDuration > 0, "bad timeout: %s", timeoutDuration);
-    checkArgument(interfaceType.isInterface(), "interfaceType must be an interface type");
+    @Override
+    public <T> T newProxy(final T target, Class<T> interfaceType, final long timeoutDuration,
+            final TimeUnit timeoutUnit) {
+        checkNotNull(target);
+        checkNotNull(interfaceType);
+        checkNotNull(timeoutUnit);
+        checkArgument(timeoutDuration > 0, "bad timeout: %s", timeoutDuration);
+        checkArgument(interfaceType.isInterface(), "interfaceType must be an interface type");
 
-    final Set<Method> interruptibleMethods = findInterruptibleMethods(interfaceType);
+        final Set<Method> interruptibleMethods = findInterruptibleMethods(interfaceType);
 
-    InvocationHandler handler =
-        new InvocationHandler() {
-          @Override
-          public Object invoke(Object obj, final Method method, final Object[] args)
-              throws Throwable {
-            Callable<Object> callable =
-                new Callable<Object>() {
-                  @Override
-                  public Object call() throws Exception {
-                    try {
-                      return method.invoke(target, args);
-                    } catch (InvocationTargetException e) {
-                      throw throwCause(e, false);
+        InvocationHandler handler = new InvocationHandler() {
+            @Override
+            public Object invoke(Object obj, final Method method, final Object[] args) throws Throwable {
+                Callable<Object> callable = new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        try {
+                            return method.invoke(target, args);
+                        } catch (InvocationTargetException e) {
+                            throw throwCause(e, false);
+                        }
                     }
-                  }
                 };
-            return callWithTimeout(
-                callable, timeoutDuration, timeoutUnit, interruptibleMethods.contains(method));
-          }
+                return callWithTimeout(callable, timeoutDuration, timeoutUnit, interruptibleMethods.contains(method));
+            }
         };
-    return newProxy(interfaceType, handler);
-  }
+        return newProxy(interfaceType, handler);
+    }
 
-  // TODO: should this actually throw only ExecutionException?
-  @CanIgnoreReturnValue
-  @Override
-  public <T> T callWithTimeout(
-      Callable<T> callable, long timeoutDuration, TimeUnit timeoutUnit, boolean amInterruptible)
-      throws Exception {
-    checkNotNull(callable);
-    checkNotNull(timeoutUnit);
-    checkArgument(timeoutDuration > 0, "timeout must be positive: %s", timeoutDuration);
-    Future<T> future = executor.submit(callable);
-    try {
-      if (amInterruptible) {
+    // TODO: should this actually throw only ExecutionException?
+    @CanIgnoreReturnValue
+    @Override
+    public <T> T callWithTimeout(Callable<T> callable, long timeoutDuration, TimeUnit timeoutUnit,
+            boolean amInterruptible) throws Exception {
+        checkNotNull(callable);
+        checkNotNull(timeoutUnit);
+        checkArgument(timeoutDuration > 0, "timeout must be positive: %s", timeoutDuration);
+        Future<T> future = executor.submit(callable);
         try {
-          return future.get(timeoutDuration, timeoutUnit);
-        } catch (InterruptedException e) {
-          future.cancel(true);
-          throw e;
+            if (amInterruptible) {
+                try {
+                    return future.get(timeoutDuration, timeoutUnit);
+                } catch (InterruptedException e) {
+                    future.cancel(true);
+                    throw e;
+                }
+            } else {
+                return Uninterruptibles.getUninterruptibly(future, timeoutDuration, timeoutUnit);
+            }
+        } catch (ExecutionException e) {
+            throw throwCause(e, true);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new UncheckedTimeoutException(e);
         }
-      } else {
-        return Uninterruptibles.getUninterruptibly(future, timeoutDuration, timeoutUnit);
-      }
-    } catch (ExecutionException e) {
-      throw throwCause(e, true);
-    } catch (TimeoutException e) {
-      future.cancel(true);
-      throw new UncheckedTimeoutException(e);
     }
-  }
 
-  private static Exception throwCause(Exception e, boolean combineStackTraces) throws Exception {
-    Throwable cause = e.getCause();
-    if (cause == null) {
-      throw e;
+    private static Exception throwCause(Exception e, boolean combineStackTraces) throws Exception {
+        Throwable cause = e.getCause();
+        if (cause == null) {
+            throw e;
+        }
+        if (combineStackTraces) {
+            StackTraceElement[] combined =
+                    ObjectArrays.concat(cause.getStackTrace(), e.getStackTrace(), StackTraceElement.class);
+            cause.setStackTrace(combined);
+        }
+        if (cause instanceof Exception) {
+            throw (Exception) cause;
+        }
+        if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        // The cause is a weird kind of Throwable, so throw the outer exception.
+        throw e;
     }
-    if (combineStackTraces) {
-      StackTraceElement[] combined =
-          ObjectArrays.concat(cause.getStackTrace(), e.getStackTrace(), StackTraceElement.class);
-      cause.setStackTrace(combined);
-    }
-    if (cause instanceof Exception) {
-      throw (Exception) cause;
-    }
-    if (cause instanceof Error) {
-      throw (Error) cause;
-    }
-    // The cause is a weird kind of Throwable, so throw the outer exception.
-    throw e;
-  }
 
-  private static Set<Method> findInterruptibleMethods(Class<?> interfaceType) {
-    Set<Method> set = Sets.newHashSet();
-    for (Method m : interfaceType.getMethods()) {
-      if (declaresInterruptedEx(m)) {
-        set.add(m);
-      }
+    private static Set<Method> findInterruptibleMethods(Class<?> interfaceType) {
+        Set<Method> set = Sets.newHashSet();
+        for (Method m : interfaceType.getMethods()) {
+            if (declaresInterruptedEx(m)) {
+                set.add(m);
+            }
+        }
+        return set;
     }
-    return set;
-  }
 
-  private static boolean declaresInterruptedEx(Method method) {
-    for (Class<?> exType : method.getExceptionTypes()) {
-      // debate: == or isAssignableFrom?
-      if (exType == InterruptedException.class) {
-        return true;
-      }
+    private static boolean declaresInterruptedEx(Method method) {
+        for (Class<?> exType : method.getExceptionTypes()) {
+            // debate: == or isAssignableFrom?
+            if (exType == InterruptedException.class) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
-  // TODO: replace with version in common.reflect if and when it's open-sourced
-  private static <T> T newProxy(Class<T> interfaceType, InvocationHandler handler) {
-    Object object =
-        Proxy.newProxyInstance(
-            interfaceType.getClassLoader(), new Class<?>[] {interfaceType}, handler);
-    return interfaceType.cast(object);
-  }
+    // TODO: replace with version in common.reflect if and when it's open-sourced
+    private static <T> T newProxy(Class<T> interfaceType, InvocationHandler handler) {
+        Object object = Proxy.newProxyInstance(interfaceType.getClassLoader(), new Class<?>[] {interfaceType}, handler);
+        return interfaceType.cast(object);
+    }
 }

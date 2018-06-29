@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2007 The Guava Authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.common.collect;
@@ -41,191 +39,174 @@ import junit.framework.TestSuite;
 @GwtCompatible(emulated = true)
 public class HashBiMapTest extends TestCase {
 
-  public static final class HashBiMapGenerator extends TestStringBiMapGenerator {
-    @Override
-    protected BiMap<String, String> create(Entry<String, String>[] entries) {
-      BiMap<String, String> result = HashBiMap.create();
-      for (Entry<String, String> entry : entries) {
-        result.put(entry.getKey(), entry.getValue());
-      }
-      return result;
+    public static final class HashBiMapGenerator extends TestStringBiMapGenerator {
+        @Override
+        protected BiMap<String, String> create(Entry<String, String>[] entries) {
+            BiMap<String, String> result = HashBiMap.create();
+            for (Entry<String, String> entry : entries) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+            return result;
+        }
     }
-  }
 
-  @GwtIncompatible // suite
-  public static Test suite() {
-    TestSuite suite = new TestSuite();
-    suite.addTest(BiMapTestSuiteBuilder.using(new HashBiMapGenerator())
-      .named("HashBiMap")
-      .withFeatures(CollectionSize.ANY,
-          CollectionFeature.SERIALIZABLE,
-          CollectionFeature.SUPPORTS_ITERATOR_REMOVE,
-          CollectionFeature.KNOWN_ORDER,
-          MapFeature.ALLOWS_NULL_KEYS,
-          MapFeature.ALLOWS_NULL_VALUES,
-          MapFeature.ALLOWS_ANY_NULL_QUERIES,
-          MapFeature.GENERAL_PURPOSE)
-      .createTestSuite());
-    suite.addTestSuite(HashBiMapTest.class);
-    return suite;
-  }
-
-  public void testMapConstructor() {
-    /* Test with non-empty Map. */
-    Map<String, String> map = ImmutableMap.of(
-        "canada", "dollar",
-        "chile", "peso",
-        "switzerland", "franc");
-    HashBiMap<String, String> bimap = HashBiMap.create(map);
-    assertEquals("dollar", bimap.get("canada"));
-    assertEquals("canada", bimap.inverse().get("dollar"));
-  }
-
-  private static final int N = 1000;
-
-  public void testBashIt() throws Exception {
-    BiMap<Integer, Integer> bimap = HashBiMap.create(N);
-    BiMap<Integer, Integer> inverse = bimap.inverse();
-
-    for (int i = 0; i < N; i++) {
-      assertNull(bimap.put(2 * i, 2 * i + 1));
+    @GwtIncompatible // suite
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(BiMapTestSuiteBuilder.using(new HashBiMapGenerator()).named("HashBiMap")
+                .withFeatures(CollectionSize.ANY, CollectionFeature.SERIALIZABLE,
+                        CollectionFeature.SUPPORTS_ITERATOR_REMOVE, CollectionFeature.KNOWN_ORDER,
+                        MapFeature.ALLOWS_NULL_KEYS, MapFeature.ALLOWS_NULL_VALUES, MapFeature.ALLOWS_ANY_NULL_QUERIES,
+                        MapFeature.GENERAL_PURPOSE)
+                .createTestSuite());
+        suite.addTestSuite(HashBiMapTest.class);
+        return suite;
     }
-    for (int i = 0; i < N; i++) {
-      assertEquals(2 * i + 1, (int) bimap.get(2 * i));
+
+    public void testMapConstructor() {
+        /* Test with non-empty Map. */
+        Map<String, String> map = ImmutableMap.of("canada", "dollar", "chile", "peso", "switzerland", "franc");
+        HashBiMap<String, String> bimap = HashBiMap.create(map);
+        assertEquals("dollar", bimap.get("canada"));
+        assertEquals("canada", bimap.inverse().get("dollar"));
     }
-    for (int i = 0; i < N; i++) {
-      assertEquals(2 * i, (int) inverse.get(2 * i + 1));
+
+    private static final int N = 1000;
+
+    public void testBashIt() throws Exception {
+        BiMap<Integer, Integer> bimap = HashBiMap.create(N);
+        BiMap<Integer, Integer> inverse = bimap.inverse();
+
+        for (int i = 0; i < N; i++) {
+            assertNull(bimap.put(2 * i, 2 * i + 1));
+        }
+        for (int i = 0; i < N; i++) {
+            assertEquals(2 * i + 1, (int) bimap.get(2 * i));
+        }
+        for (int i = 0; i < N; i++) {
+            assertEquals(2 * i, (int) inverse.get(2 * i + 1));
+        }
+        for (int i = 0; i < N; i++) {
+            int oldValue = bimap.get(2 * i);
+            assertEquals(2 * i + 1, (int) bimap.put(2 * i, oldValue - 2));
+        }
+        for (int i = 0; i < N; i++) {
+            assertEquals(2 * i - 1, (int) bimap.get(2 * i));
+        }
+        for (int i = 0; i < N; i++) {
+            assertEquals(2 * i, (int) inverse.get(2 * i - 1));
+        }
+        Set<Entry<Integer, Integer>> entries = bimap.entrySet();
+        for (Entry<Integer, Integer> entry : entries) {
+            entry.setValue(entry.getValue() + 2 * N);
+        }
+        for (int i = 0; i < N; i++) {
+            assertEquals(2 * N + 2 * i - 1, (int) bimap.get(2 * i));
+        }
     }
-    for (int i = 0; i < N; i++) {
-      int oldValue = bimap.get(2 * i);
-      assertEquals(2 * i + 1, (int) bimap.put(2 * i, oldValue - 2));
+
+    public void testBiMapEntrySetIteratorRemove() {
+        BiMap<Integer, String> map = HashBiMap.create();
+        map.put(1, "one");
+        Set<Map.Entry<Integer, String>> entries = map.entrySet();
+        Iterator<Map.Entry<Integer, String>> iterator = entries.iterator();
+        Map.Entry<Integer, String> entry = iterator.next();
+        entry.setValue("two"); // changes the iterator's current entry value
+        assertEquals("two", map.get(1));
+        assertEquals(Integer.valueOf(1), map.inverse().get("two"));
+        iterator.remove(); // removes the updated entry
+        assertTrue(map.isEmpty());
     }
-    for (int i = 0; i < N; i++) {
-      assertEquals(2 * i - 1, (int) bimap.get(2 * i));
+
+    public void testInsertionOrder() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("foo", 1), Maps.immutableEntry("bar", 2),
+                Maps.immutableEntry("quux", 3)).inOrder();
     }
-    for (int i = 0; i < N; i++) {
-      assertEquals(2 * i, (int) inverse.get(2 * i - 1));
+
+    public void testInsertionOrderAfterRemoveFirst() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
+
+        map.remove("foo");
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("bar", 2), Maps.immutableEntry("quux", 3))
+                .inOrder();
     }
-    Set<Entry<Integer, Integer>> entries = bimap.entrySet();
-    for (Entry<Integer, Integer> entry : entries) {
-      entry.setValue(entry.getValue() + 2 * N);
+
+    public void testInsertionOrderAfterRemoveMiddle() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
+
+        map.remove("bar");
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("foo", 1), Maps.immutableEntry("quux", 3))
+                .inOrder();
     }
-    for (int i = 0; i < N; i++) {
-      assertEquals(2 * N + 2 * i - 1, (int) bimap.get(2 * i));
+
+    public void testInsertionOrderAfterRemoveLast() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
+
+        map.remove("quux");
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("foo", 1), Maps.immutableEntry("bar", 2))
+                .inOrder();
     }
-  }
 
-  public void testBiMapEntrySetIteratorRemove() {
-    BiMap<Integer, String> map = HashBiMap.create();
-    map.put(1, "one");
-    Set<Map.Entry<Integer, String>> entries = map.entrySet();
-    Iterator<Map.Entry<Integer, String>> iterator = entries.iterator();
-    Map.Entry<Integer, String> entry = iterator.next();
-    entry.setValue("two"); // changes the iterator's current entry value
-    assertEquals("two", map.get(1));
-    assertEquals(Integer.valueOf(1), map.inverse().get("two"));
-    iterator.remove(); // removes the updated entry
-    assertTrue(map.isEmpty());
-  }
+    public void testInsertionOrderAfterForcePut() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
 
-  public void testInsertionOrder() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("foo", 1),
-        Maps.immutableEntry("bar", 2),
-        Maps.immutableEntry("quux", 3)).inOrder();
-  }
+        map.forcePut("quux", 1);
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("bar", 2), Maps.immutableEntry("quux", 1))
+                .inOrder();
+    }
 
-  public void testInsertionOrderAfterRemoveFirst() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
+    public void testInsertionOrderAfterInverseForcePut() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
 
-    map.remove("foo");
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("bar", 2),
-        Maps.immutableEntry("quux", 3)).inOrder();
-  }
+        map.inverse().forcePut(1, "quux");
+        assertThat(map.entrySet()).containsExactly(Maps.immutableEntry("bar", 2), Maps.immutableEntry("quux", 1))
+                .inOrder();
+    }
 
-  public void testInsertionOrderAfterRemoveMiddle() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
+    public void testInverseInsertionOrderAfterInverse() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("bar", 2);
+        map.put("quux", 1);
 
-    map.remove("bar");
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("foo", 1),
-        Maps.immutableEntry("quux", 3)).inOrder();
-  }
+        assertThat(map.inverse().entrySet())
+                .containsExactly(Maps.immutableEntry(2, "bar"), Maps.immutableEntry(1, "quux")).inOrder();
+    }
 
-  public void testInsertionOrderAfterRemoveLast() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
+    public void testInverseInsertionOrderAfterInverseForcePut() {
+        BiMap<String, Integer> map = HashBiMap.create();
+        map.put("foo", 1);
+        map.put("bar", 2);
+        map.put("quux", 3);
 
-    map.remove("quux");
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("foo", 1),
-        Maps.immutableEntry("bar", 2)).inOrder();
-  }
+        map.inverse().forcePut(1, "quux");
+        assertThat(map.inverse().entrySet())
+                .containsExactly(Maps.immutableEntry(2, "bar"), Maps.immutableEntry(1, "quux")).inOrder();
+    }
 
-  public void testInsertionOrderAfterForcePut() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
-
-    map.forcePut("quux", 1);
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("bar", 2),
-        Maps.immutableEntry("quux", 1)).inOrder();
-  }
-
-  public void testInsertionOrderAfterInverseForcePut() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
-
-    map.inverse().forcePut(1, "quux");
-    assertThat(map.entrySet()).containsExactly(
-        Maps.immutableEntry("bar", 2),
-        Maps.immutableEntry("quux", 1)).inOrder();
-  }
-
-  public void testInverseInsertionOrderAfterInverse() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("bar", 2);
-    map.put("quux", 1);
-
-    assertThat(map.inverse().entrySet())
-        .containsExactly(Maps.immutableEntry(2, "bar"), Maps.immutableEntry(1, "quux"))
-        .inOrder();
-  }
-
-  public void testInverseInsertionOrderAfterInverseForcePut() {
-    BiMap<String, Integer> map = HashBiMap.create();
-    map.put("foo", 1);
-    map.put("bar", 2);
-    map.put("quux", 3);
-
-    map.inverse().forcePut(1, "quux");
-    assertThat(map.inverse().entrySet()).containsExactly(
-        Maps.immutableEntry(2, "bar"),
-        Maps.immutableEntry(1, "quux")).inOrder();
-  }
-
-  public void testInverseEntrySetValue() {
-    BiMap<Integer, String> map = HashBiMap.create();
-    map.put(1, "one");
-    Entry<String, Integer> inverseEntry = Iterables.getOnlyElement(map.inverse().entrySet());
-    inverseEntry.setValue(2);
-    assertEquals(Integer.valueOf(2), inverseEntry.getValue());
-  }
+    public void testInverseEntrySetValue() {
+        BiMap<Integer, String> map = HashBiMap.create();
+        map.put(1, "one");
+        Entry<String, Integer> inverseEntry = Iterables.getOnlyElement(map.inverse().entrySet());
+        inverseEntry.setValue(2);
+        assertEquals(Integer.valueOf(2), inverseEntry.getValue());
+    }
 }

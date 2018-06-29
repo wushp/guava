@@ -31,93 +31,84 @@ import junit.framework.TestCase;
  * @author mike nonemacher
  */
 public class NullCacheTest extends TestCase {
-  QueuingRemovalListener<Object, Object> listener;
+    QueuingRemovalListener<Object, Object> listener;
 
-  @Override
-  protected void setUp() {
-    listener = queuingRemovalListener();
-  }
-
-  public void testGet() {
-    Object computed = new Object();
-    LoadingCache<Object, Object> cache = CacheBuilder.newBuilder()
-        .maximumSize(0)
-        .removalListener(listener)
-        .build(constantLoader(computed));
-
-    Object key = new Object();
-    assertSame(computed, cache.getUnchecked(key));
-    RemovalNotification<Object, Object> notification = listener.remove();
-    assertSame(key, notification.getKey());
-    assertSame(computed, notification.getValue());
-    assertSame(RemovalCause.SIZE, notification.getCause());
-    assertTrue(listener.isEmpty());
-    checkEmpty(cache);
-  }
-
-  public void testGet_expireAfterWrite() {
-    Object computed = new Object();
-    LoadingCache<Object, Object> cache = CacheBuilder.newBuilder()
-        .expireAfterWrite(0, SECONDS)
-        .removalListener(listener)
-        .build(constantLoader(computed));
-
-    Object key = new Object();
-    assertSame(computed, cache.getUnchecked(key));
-    RemovalNotification<Object, Object> notification = listener.remove();
-    assertSame(key, notification.getKey());
-    assertSame(computed, notification.getValue());
-    assertSame(RemovalCause.SIZE, notification.getCause());
-    assertTrue(listener.isEmpty());
-    checkEmpty(cache);
-  }
-
-  public void testGet_expireAfterAccess() {
-    Object computed = new Object();
-    LoadingCache<Object, Object> cache = CacheBuilder.newBuilder()
-        .expireAfterAccess(0, SECONDS)
-        .removalListener(listener)
-        .build(constantLoader(computed));
-
-    Object key = new Object();
-    assertSame(computed, cache.getUnchecked(key));
-    RemovalNotification<Object, Object> notification = listener.remove();
-    assertSame(key, notification.getKey());
-    assertSame(computed, notification.getValue());
-    assertSame(RemovalCause.SIZE, notification.getCause());
-    assertTrue(listener.isEmpty());
-    checkEmpty(cache);
-  }
-
-  public void testGet_computeNull() {
-    LoadingCache<Object, Object> cache = CacheBuilder.newBuilder()
-        .maximumSize(0)
-        .removalListener(listener)
-        .build(constantLoader(null));
-
-    try {
-      cache.getUnchecked(new Object());
-      fail();
-    } catch (InvalidCacheLoadException e) { /* expected */}
-
-    assertTrue(listener.isEmpty());
-    checkEmpty(cache);
-  }
-
-  public void testGet_runtimeException() {
-    final RuntimeException e = new RuntimeException();
-    LoadingCache<Object, Object> map = CacheBuilder.newBuilder()
-        .maximumSize(0)
-        .removalListener(listener)
-        .build(exceptionLoader(e));
-
-    try {
-      map.getUnchecked(new Object());
-      fail();
-    } catch (UncheckedExecutionException uee) {
-      assertSame(e, uee.getCause());
+    @Override
+    protected void setUp() {
+        listener = queuingRemovalListener();
     }
-    assertTrue(listener.isEmpty());
-    checkEmpty(map);
-  }
+
+    public void testGet() {
+        Object computed = new Object();
+        LoadingCache<Object, Object> cache =
+                CacheBuilder.newBuilder().maximumSize(0).removalListener(listener).build(constantLoader(computed));
+
+        Object key = new Object();
+        assertSame(computed, cache.getUnchecked(key));
+        RemovalNotification<Object, Object> notification = listener.remove();
+        assertSame(key, notification.getKey());
+        assertSame(computed, notification.getValue());
+        assertSame(RemovalCause.SIZE, notification.getCause());
+        assertTrue(listener.isEmpty());
+        checkEmpty(cache);
+    }
+
+    public void testGet_expireAfterWrite() {
+        Object computed = new Object();
+        LoadingCache<Object, Object> cache = CacheBuilder.newBuilder().expireAfterWrite(0, SECONDS)
+                .removalListener(listener).build(constantLoader(computed));
+
+        Object key = new Object();
+        assertSame(computed, cache.getUnchecked(key));
+        RemovalNotification<Object, Object> notification = listener.remove();
+        assertSame(key, notification.getKey());
+        assertSame(computed, notification.getValue());
+        assertSame(RemovalCause.SIZE, notification.getCause());
+        assertTrue(listener.isEmpty());
+        checkEmpty(cache);
+    }
+
+    public void testGet_expireAfterAccess() {
+        Object computed = new Object();
+        LoadingCache<Object, Object> cache = CacheBuilder.newBuilder().expireAfterAccess(0, SECONDS)
+                .removalListener(listener).build(constantLoader(computed));
+
+        Object key = new Object();
+        assertSame(computed, cache.getUnchecked(key));
+        RemovalNotification<Object, Object> notification = listener.remove();
+        assertSame(key, notification.getKey());
+        assertSame(computed, notification.getValue());
+        assertSame(RemovalCause.SIZE, notification.getCause());
+        assertTrue(listener.isEmpty());
+        checkEmpty(cache);
+    }
+
+    public void testGet_computeNull() {
+        LoadingCache<Object, Object> cache =
+                CacheBuilder.newBuilder().maximumSize(0).removalListener(listener).build(constantLoader(null));
+
+        try {
+            cache.getUnchecked(new Object());
+            fail();
+        } catch (InvalidCacheLoadException e) {
+            /* expected */}
+
+        assertTrue(listener.isEmpty());
+        checkEmpty(cache);
+    }
+
+    public void testGet_runtimeException() {
+        final RuntimeException e = new RuntimeException();
+        LoadingCache<Object, Object> map =
+                CacheBuilder.newBuilder().maximumSize(0).removalListener(listener).build(exceptionLoader(e));
+
+        try {
+            map.getUnchecked(new Object());
+            fail();
+        } catch (UncheckedExecutionException uee) {
+            assertSame(e, uee.getCause());
+        }
+        assertTrue(listener.isEmpty());
+        checkEmpty(map);
+    }
 }

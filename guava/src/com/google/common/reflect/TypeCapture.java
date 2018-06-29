@@ -26,10 +26,10 @@ import java.lang.reflect.Type;
  */
 abstract class TypeCapture<T> {
 
-  /** Returns the captured type. */
-  final Type capture() {
-    Type superclass = getClass().getGenericSuperclass();
-    checkArgument(superclass instanceof ParameterizedType, "%s isn't parameterized", superclass);
-    return ((ParameterizedType) superclass).getActualTypeArguments()[0];
-  }
+    /** Returns the captured type. */
+    final Type capture() {
+        Type superclass = getClass().getGenericSuperclass();
+        checkArgument(superclass instanceof ParameterizedType, "%s isn't parameterized", superclass);
+        return ((ParameterizedType) superclass).getActualTypeArguments()[0];
+    }
 }

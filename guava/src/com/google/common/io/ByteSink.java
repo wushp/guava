@@ -31,14 +31,15 @@ import java.nio.charset.Charset;
  * {@code ByteSink} is not an open, stateful stream that can be written to and closed. Instead, it
  * is an immutable <i>supplier</i> of {@code OutputStream} instances.
  *
- * <p>{@code ByteSink} provides two kinds of methods:
+ * <p>
+ * {@code ByteSink} provides two kinds of methods:
  * <ul>
  * <li><b>Methods that return a stream:</b> These methods should return a <i>new</i>, independent
- *     instance each time they are called. The caller is responsible for ensuring that the returned
- *     stream is closed.
+ * instance each time they are called. The caller is responsible for ensuring that the returned
+ * stream is closed.
  * <li><b>Convenience methods:</b> These are implementations of common operations that are typically
- *     implemented by opening a stream using one of the methods in the first category, doing
- *     something and finally closing the stream or channel that was opened.
+ * implemented by opening a stream using one of the methods in the first category, doing something
+ * and finally closing the stream or channel that was opened.
  * </ul>
  *
  * @since 14.0
@@ -47,113 +48,113 @@ import java.nio.charset.Charset;
 @GwtIncompatible
 public abstract class ByteSink {
 
-  /**
-   * Constructor for use by subclasses.
-   */
-  protected ByteSink() {}
+    /**
+     * Constructor for use by subclasses.
+     */
+    protected ByteSink() {}
 
-  /**
-   * Returns a {@link CharSink} view of this {@code ByteSink} that writes characters to this sink as
-   * bytes encoded with the given {@link Charset charset}.
-   */
-  public CharSink asCharSink(Charset charset) {
-    return new AsCharSink(charset);
-  }
-
-  /**
-   * Opens a new {@link OutputStream} for writing to this sink. This method should return a new,
-   * independent stream each time it is called.
-   *
-   * <p>The caller is responsible for ensuring that the returned stream is closed.
-   *
-   * @throws IOException if an I/O error occurs in the process of opening the stream
-   */
-  public abstract OutputStream openStream() throws IOException;
-
-  /**
-   * Opens a new buffered {@link OutputStream} for writing to this sink. The returned stream is not
-   * required to be a {@link BufferedOutputStream} in order to allow implementations to simply
-   * delegate to {@link #openStream()} when the stream returned by that method does not benefit from
-   * additional buffering (for example, a {@code ByteArrayOutputStream}). This method should return
-   * a new, independent stream each time it is called.
-   *
-   * <p>The caller is responsible for ensuring that the returned stream is closed.
-   *
-   * @throws IOException if an I/O error occurs in the process of opening the stream
-   * @since 15.0 (in 14.0 with return type {@link BufferedOutputStream})
-   */
-  public OutputStream openBufferedStream() throws IOException {
-    OutputStream out = openStream();
-    return (out instanceof BufferedOutputStream)
-        ? (BufferedOutputStream) out
-        : new BufferedOutputStream(out);
-  }
-
-  /**
-   * Writes all the given bytes to this sink.
-   *
-   * @throws IOException if an I/O occurs in the process of writing to this sink
-   */
-  public void write(byte[] bytes) throws IOException {
-    checkNotNull(bytes);
-
-    Closer closer = Closer.create();
-    try {
-      OutputStream out = closer.register(openStream());
-      out.write(bytes);
-      out.flush(); // https://code.google.com/p/guava-libraries/issues/detail?id=1330
-    } catch (Throwable e) {
-      throw closer.rethrow(e);
-    } finally {
-      closer.close();
-    }
-  }
-
-  /**
-   * Writes all the bytes from the given {@code InputStream} to this sink. Does not close
-   * {@code input}.
-   *
-   * @return the number of bytes written
-   * @throws IOException if an I/O occurs in the process of reading from {@code input} or writing to
-   *     this sink
-   */
-  @CanIgnoreReturnValue
-  public long writeFrom(InputStream input) throws IOException {
-    checkNotNull(input);
-
-    Closer closer = Closer.create();
-    try {
-      OutputStream out = closer.register(openStream());
-      long written = ByteStreams.copy(input, out);
-      out.flush(); // https://code.google.com/p/guava-libraries/issues/detail?id=1330
-      return written;
-    } catch (Throwable e) {
-      throw closer.rethrow(e);
-    } finally {
-      closer.close();
-    }
-  }
-
-  /**
-   * A char sink that encodes written characters with a charset and writes resulting bytes to this
-   * byte sink.
-   */
-  private final class AsCharSink extends CharSink {
-
-    private final Charset charset;
-
-    private AsCharSink(Charset charset) {
-      this.charset = checkNotNull(charset);
+    /**
+     * Returns a {@link CharSink} view of this {@code ByteSink} that writes characters to this sink
+     * as bytes encoded with the given {@link Charset charset}.
+     */
+    public CharSink asCharSink(Charset charset) {
+        return new AsCharSink(charset);
     }
 
-    @Override
-    public Writer openStream() throws IOException {
-      return new OutputStreamWriter(ByteSink.this.openStream(), charset);
+    /**
+     * Opens a new {@link OutputStream} for writing to this sink. This method should return a new,
+     * independent stream each time it is called.
+     *
+     * <p>
+     * The caller is responsible for ensuring that the returned stream is closed.
+     *
+     * @throws IOException if an I/O error occurs in the process of opening the stream
+     */
+    public abstract OutputStream openStream() throws IOException;
+
+    /**
+     * Opens a new buffered {@link OutputStream} for writing to this sink. The returned stream is
+     * not required to be a {@link BufferedOutputStream} in order to allow implementations to simply
+     * delegate to {@link #openStream()} when the stream returned by that method does not benefit
+     * from additional buffering (for example, a {@code ByteArrayOutputStream}). This method should
+     * return a new, independent stream each time it is called.
+     *
+     * <p>
+     * The caller is responsible for ensuring that the returned stream is closed.
+     *
+     * @throws IOException if an I/O error occurs in the process of opening the stream
+     * @since 15.0 (in 14.0 with return type {@link BufferedOutputStream})
+     */
+    public OutputStream openBufferedStream() throws IOException {
+        OutputStream out = openStream();
+        return (out instanceof BufferedOutputStream) ? (BufferedOutputStream) out : new BufferedOutputStream(out);
     }
 
-    @Override
-    public String toString() {
-      return ByteSink.this.toString() + ".asCharSink(" + charset + ")";
+    /**
+     * Writes all the given bytes to this sink.
+     *
+     * @throws IOException if an I/O occurs in the process of writing to this sink
+     */
+    public void write(byte[] bytes) throws IOException {
+        checkNotNull(bytes);
+
+        Closer closer = Closer.create();
+        try {
+            OutputStream out = closer.register(openStream());
+            out.write(bytes);
+            out.flush(); // https://code.google.com/p/guava-libraries/issues/detail?id=1330
+        } catch (Throwable e) {
+            throw closer.rethrow(e);
+        } finally {
+            closer.close();
+        }
     }
-  }
+
+    /**
+     * Writes all the bytes from the given {@code InputStream} to this sink. Does not close
+     * {@code input}.
+     *
+     * @return the number of bytes written
+     * @throws IOException if an I/O occurs in the process of reading from {@code input} or writing
+     *         to this sink
+     */
+    @CanIgnoreReturnValue
+    public long writeFrom(InputStream input) throws IOException {
+        checkNotNull(input);
+
+        Closer closer = Closer.create();
+        try {
+            OutputStream out = closer.register(openStream());
+            long written = ByteStreams.copy(input, out);
+            out.flush(); // https://code.google.com/p/guava-libraries/issues/detail?id=1330
+            return written;
+        } catch (Throwable e) {
+            throw closer.rethrow(e);
+        } finally {
+            closer.close();
+        }
+    }
+
+    /**
+     * A char sink that encodes written characters with a charset and writes resulting bytes to this
+     * byte sink.
+     */
+    private final class AsCharSink extends CharSink {
+
+        private final Charset charset;
+
+        private AsCharSink(Charset charset) {
+            this.charset = checkNotNull(charset);
+        }
+
+        @Override
+        public Writer openStream() throws IOException {
+            return new OutputStreamWriter(ByteSink.this.openStream(), charset);
+        }
+
+        @Override
+        public String toString() {
+            return ByteSink.this.toString() + ".asCharSink(" + charset + ")";
+        }
+    }
 }

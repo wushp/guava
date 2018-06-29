@@ -23,22 +23,22 @@ import java.lang.ref.ReferenceQueue;
  * after the garbage collector reclaims the referent. This is a simpler alternative to using a
  * {@link ReferenceQueue}.
  *
- * <p>Unlike a normal phantom reference, this reference will be cleared automatically.
+ * <p>
+ * Unlike a normal phantom reference, this reference will be cleared automatically.
  *
  * @author Bob Lee
  * @since 2.0
  */
 @GwtIncompatible
-public abstract class FinalizablePhantomReference<T> extends PhantomReference<T>
-    implements FinalizableReference {
-  /**
-   * Constructs a new finalizable phantom reference.
-   *
-   * @param referent to phantom reference
-   * @param queue that should finalize the referent
-   */
-  protected FinalizablePhantomReference(T referent, FinalizableReferenceQueue queue) {
-    super(referent, queue.queue);
-    queue.cleanUp();
-  }
+public abstract class FinalizablePhantomReference<T> extends PhantomReference<T> implements FinalizableReference {
+    /**
+     * Constructs a new finalizable phantom reference.
+     *
+     * @param referent to phantom reference
+     * @param queue that should finalize the referent
+     */
+    protected FinalizablePhantomReference(T referent, FinalizableReferenceQueue queue) {
+        super(referent, queue.queue);
+        queue.cleanUp();
+    }
 }

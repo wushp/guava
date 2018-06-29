@@ -1,16 +1,13 @@
 /*
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/publicdomain/zero/1.0/
- * Other contributors include Andrew Wright, Jeffrey Hayes,
- * Pat Fisher, Mike Judd.
+ * Written by Doug Lea with assistance from members of JCP JSR-166 Expert Group and released to the
+ * public domain, as explained at http://creativecommons.org/publicdomain/zero/1.0/ Other
+ * contributors include Andrew Wright, Jeffrey Hayes, Pat Fisher, Mike Judd.
  */
 
 /*
  * Source:
- * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/test/tck/JSR166TestCase.java?revision=1.90
- * (We have made some trivial local modifications (commented out
- * uncompilable code).)
+ * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/test/tck/JSR166TestCase.java?revision=1.
+ * 90 (We have made some trivial local modifications (commented out uncompilable code).)
  */
 
 package com.google.common.util.concurrent;
@@ -49,98 +46,79 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 /**
- * Base class for JSR166 Junit TCK tests.  Defines some constants,
- * utility methods and classes, as well as a simple framework for
- * helping to make sure that assertions failing in generated threads
- * cause the associated test that generated them to itself fail (which
- * JUnit does not otherwise arrange).  The rules for creating such
- * tests are:
+ * Base class for JSR166 Junit TCK tests. Defines some constants, utility methods and classes, as
+ * well as a simple framework for helping to make sure that assertions failing in generated threads
+ * cause the associated test that generated them to itself fail (which JUnit does not otherwise
+ * arrange). The rules for creating such tests are:
  *
  * <ol>
  *
- * <li> All assertions in code running in generated threads must use
- * the forms {@link #threadFail}, {@link #threadAssertTrue}, {@link
- * #threadAssertEquals}, or {@link #threadAssertNull}, (not
- * {@code fail}, {@code assertTrue}, etc.) It is OK (but not
- * particularly recommended) for other code to use these forms too.
- * Only the most typically used JUnit assertion methods are defined
+ * <li>All assertions in code running in generated threads must use the forms {@link #threadFail},
+ * {@link #threadAssertTrue}, {@link #threadAssertEquals}, or {@link #threadAssertNull}, (not
+ * {@code fail}, {@code assertTrue}, etc.) It is OK (but not particularly recommended) for other
+ * code to use these forms too. Only the most typically used JUnit assertion methods are defined
  * this way, but enough to live with.</li>
  *
- * <li> If you override {@link #setUp} or {@link #tearDown}, make sure
- * to invoke {@code super.setUp} and {@code super.tearDown} within
- * them. These methods are used to clear and check for thread
+ * <li>If you override {@link #setUp} or {@link #tearDown}, make sure to invoke {@code super.setUp}
+ * and {@code super.tearDown} within them. These methods are used to clear and check for thread
  * assertion failures.</li>
  *
  * <li>All delays and timeouts must use one of the constants {@code
- * SHORT_DELAY_MS}, {@code SMALL_DELAY_MS}, {@code MEDIUM_DELAY_MS},
- * {@code LONG_DELAY_MS}. The idea here is that a SHORT is always
- * discriminable from zero time, and always allows enough time for the
- * small amounts of computation (creating a thread, calling a few
- * methods, etc) needed to reach a timeout point. Similarly, a SMALL
- * is always discriminable as larger than SHORT and smaller than
- * MEDIUM.  And so on. These constants are set to conservative values,
- * but even so, if there is ever any doubt, they can all be increased
- * in one spot to rerun tests on slower platforms.</li>
+ * SHORT_DELAY_MS}, {@code SMALL_DELAY_MS}, {@code MEDIUM_DELAY_MS}, {@code LONG_DELAY_MS}. The idea
+ * here is that a SHORT is always discriminable from zero time, and always allows enough time for
+ * the small amounts of computation (creating a thread, calling a few methods, etc) needed to reach
+ * a timeout point. Similarly, a SMALL is always discriminable as larger than SHORT and smaller than
+ * MEDIUM. And so on. These constants are set to conservative values, but even so, if there is ever
+ * any doubt, they can all be increased in one spot to rerun tests on slower platforms.</li>
  *
- * <li> All threads generated must be joined inside each test case
- * method (or {@code fail} to do so) before returning from the
- * method. The {@code joinPool} method can be used to do this when
- * using Executors.</li>
+ * <li>All threads generated must be joined inside each test case method (or {@code fail} to do so)
+ * before returning from the method. The {@code joinPool} method can be used to do this when using
+ * Executors.</li>
  *
  * </ol>
  *
- * <p> <b>Other notes</b>
+ * <p>
+ * <b>Other notes</b>
  * <ul>
  *
- * <li> Usually, there is one testcase method per JSR166 method
- * covering "normal" operation, and then as many exception-testing
- * methods as there are exceptions the method can throw. Sometimes
- * there are multiple tests per JSR166 method when the different
- * "normal" behaviors differ significantly. And sometimes testcases
- * cover multiple methods when they cannot be tested in
- * isolation.</li>
+ * <li>Usually, there is one testcase method per JSR166 method covering "normal" operation, and then
+ * as many exception-testing methods as there are exceptions the method can throw. Sometimes there
+ * are multiple tests per JSR166 method when the different "normal" behaviors differ significantly.
+ * And sometimes testcases cover multiple methods when they cannot be tested in isolation.</li>
  *
- * <li> The documentation style for testcases is to provide as javadoc
- * a simple sentence or two describing the property that the testcase
- * method purports to test. The javadocs do not say anything about how
- * the property is tested. To find out, read the code.</li>
+ * <li>The documentation style for testcases is to provide as javadoc a simple sentence or two
+ * describing the property that the testcase method purports to test. The javadocs do not say
+ * anything about how the property is tested. To find out, read the code.</li>
  *
- * <li> These tests are "conformance tests", and do not attempt to
- * test throughput, latency, scalability or other performance factors
- * (see the separate "jtreg" tests for a set intended to check these
- * for the most central aspects of functionality.) So, most tests use
- * the smallest sensible numbers of threads, collection sizes, etc
- * needed to check basic conformance.</li>
+ * <li>These tests are "conformance tests", and do not attempt to test throughput, latency,
+ * scalability or other performance factors (see the separate "jtreg" tests for a set intended to
+ * check these for the most central aspects of functionality.) So, most tests use the smallest
+ * sensible numbers of threads, collection sizes, etc needed to check basic conformance.</li>
  *
- * <li>The test classes currently do not declare inclusion in
- * any particular package to simplify things for people integrating
- * them in TCK test suites.</li>
+ * <li>The test classes currently do not declare inclusion in any particular package to simplify
+ * things for people integrating them in TCK test suites.</li>
  *
- * <li> As a convenience, the {@code main} of this class (JSR166TestCase)
- * runs all JSR166 unit tests.</li>
+ * <li>As a convenience, the {@code main} of this class (JSR166TestCase) runs all JSR166 unit
+ * tests.</li>
  *
  * </ul>
  */
 abstract class JSR166TestCase extends TestCase {
-    private static final boolean useSecurityManager =
-        Boolean.getBoolean("jsr166.useSecurityManager");
+    private static final boolean useSecurityManager = Boolean.getBoolean("jsr166.useSecurityManager");
 
-    protected static final boolean expensiveTests =
-        Boolean.getBoolean("jsr166.expensiveTests");
+    protected static final boolean expensiveTests = Boolean.getBoolean("jsr166.expensiveTests");
 
     /**
-     * If true, report on stdout all "slow" tests, that is, ones that
-     * take more than profileThreshold milliseconds to execute.
+     * If true, report on stdout all "slow" tests, that is, ones that take more than
+     * profileThreshold milliseconds to execute.
      */
-    private static final boolean profileTests =
-        Boolean.getBoolean("jsr166.profileTests");
+    private static final boolean profileTests = Boolean.getBoolean("jsr166.profileTests");
 
     /**
-     * The number of milliseconds that tests are permitted for
-     * execution without being reported, when profileTests is set.
+     * The number of milliseconds that tests are permitted for execution without being reported,
+     * when profileTests is set.
      */
-    private static final long profileThreshold =
-        Long.getLong("jsr166.profileThreshold", 100);
+    private static final long profileThreshold = Long.getLong("jsr166.profileThreshold", 100);
 
     protected void runTest() throws Throwable {
         if (profileTests)
@@ -154,116 +132,115 @@ abstract class JSR166TestCase extends TestCase {
         try {
             super.runTest();
         } finally {
-            long elapsedMillis =
-                (System.nanoTime() - t0) / (1000L * 1000L);
+            long elapsedMillis = (System.nanoTime() - t0) / (1000L * 1000L);
             if (elapsedMillis >= profileThreshold)
                 System.out.printf("%n%s: %d%n", toString(), elapsedMillis);
         }
     }
 
-//     /**
-//      * Runs all JSR166 unit tests using junit.textui.TestRunner
-//      */
-//     public static void main(String[] args) {
-//         if (useSecurityManager) {
-//             System.err.println("Setting a permissive security manager");
-//             Policy.setPolicy(permissivePolicy());
-//             System.setSecurityManager(new SecurityManager());
-//         }
-//         int iters = (args.length == 0) ? 1 : Integer.parseInt(args[0]);
+    // /**
+    // * Runs all JSR166 unit tests using junit.textui.TestRunner
+    // */
+    // public static void main(String[] args) {
+    // if (useSecurityManager) {
+    // System.err.println("Setting a permissive security manager");
+    // Policy.setPolicy(permissivePolicy());
+    // System.setSecurityManager(new SecurityManager());
+    // }
+    // int iters = (args.length == 0) ? 1 : Integer.parseInt(args[0]);
 
-//         Test s = suite();
-//         for (int i = 0; i < iters; ++i) {
-//             junit.textui.TestRunner.run(s);
-//             System.gc();
-//             System.runFinalization();
-//         }
-//         System.exit(0);
-//     }
+    // Test s = suite();
+    // for (int i = 0; i < iters; ++i) {
+    // junit.textui.TestRunner.run(s);
+    // System.gc();
+    // System.runFinalization();
+    // }
+    // System.exit(0);
+    // }
 
-//     public static TestSuite newTestSuite(Object... suiteOrClasses) {
-//         TestSuite suite = new TestSuite();
-//         for (Object suiteOrClass : suiteOrClasses) {
-//             if (suiteOrClass instanceof TestSuite)
-//                 suite.addTest((TestSuite) suiteOrClass);
-//             else if (suiteOrClass instanceof Class)
-//                 suite.addTest(new TestSuite((Class<?>) suiteOrClass));
-//             else
-//                 throw new ClassCastException("not a test suite or class");
-//         }
-//         return suite;
-//     }
+    // public static TestSuite newTestSuite(Object... suiteOrClasses) {
+    // TestSuite suite = new TestSuite();
+    // for (Object suiteOrClass : suiteOrClasses) {
+    // if (suiteOrClass instanceof TestSuite)
+    // suite.addTest((TestSuite) suiteOrClass);
+    // else if (suiteOrClass instanceof Class)
+    // suite.addTest(new TestSuite((Class<?>) suiteOrClass));
+    // else
+    // throw new ClassCastException("not a test suite or class");
+    // }
+    // return suite;
+    // }
 
-//     /**
-//      * Collects all JSR166 unit tests as one suite.
-//      */
-//     public static Test suite() {
-//         return newTestSuite(
-//             ForkJoinPoolTest.suite(),
-//             ForkJoinTaskTest.suite(),
-//             RecursiveActionTest.suite(),
-//             RecursiveTaskTest.suite(),
-//             LinkedTransferQueueTest.suite(),
-//             PhaserTest.suite(),
-//             ThreadLocalRandomTest.suite(),
-//             AbstractExecutorServiceTest.suite(),
-//             AbstractQueueTest.suite(),
-//             AbstractQueuedSynchronizerTest.suite(),
-//             AbstractQueuedLongSynchronizerTest.suite(),
-//             ArrayBlockingQueueTest.suite(),
-//             ArrayDequeTest.suite(),
-//             AtomicBooleanTest.suite(),
-//             AtomicIntegerArrayTest.suite(),
-//             AtomicIntegerFieldUpdaterTest.suite(),
-//             AtomicIntegerTest.suite(),
-//             AtomicLongArrayTest.suite(),
-//             AtomicLongFieldUpdaterTest.suite(),
-//             AtomicLongTest.suite(),
-//             AtomicMarkableReferenceTest.suite(),
-//             AtomicReferenceArrayTest.suite(),
-//             AtomicReferenceFieldUpdaterTest.suite(),
-//             AtomicReferenceTest.suite(),
-//             AtomicStampedReferenceTest.suite(),
-//             ConcurrentHashMapTest.suite(),
-//             ConcurrentLinkedDequeTest.suite(),
-//             ConcurrentLinkedQueueTest.suite(),
-//             ConcurrentSkipListMapTest.suite(),
-//             ConcurrentSkipListSubMapTest.suite(),
-//             ConcurrentSkipListSetTest.suite(),
-//             ConcurrentSkipListSubSetTest.suite(),
-//             CopyOnWriteArrayListTest.suite(),
-//             CopyOnWriteArraySetTest.suite(),
-//             CountDownLatchTest.suite(),
-//             CyclicBarrierTest.suite(),
-//             DelayQueueTest.suite(),
-//             EntryTest.suite(),
-//             ExchangerTest.suite(),
-//             ExecutorsTest.suite(),
-//             ExecutorCompletionServiceTest.suite(),
-//             FutureTaskTest.suite(),
-//             LinkedBlockingDequeTest.suite(),
-//             LinkedBlockingQueueTest.suite(),
-//             LinkedListTest.suite(),
-//             LockSupportTest.suite(),
-//             PriorityBlockingQueueTest.suite(),
-//             PriorityQueueTest.suite(),
-//             ReentrantLockTest.suite(),
-//             ReentrantReadWriteLockTest.suite(),
-//             ScheduledExecutorTest.suite(),
-//             ScheduledExecutorSubclassTest.suite(),
-//             SemaphoreTest.suite(),
-//             SynchronousQueueTest.suite(),
-//             SystemTest.suite(),
-//             ThreadLocalTest.suite(),
-//             ThreadPoolExecutorTest.suite(),
-//             ThreadPoolExecutorSubclassTest.suite(),
-//             ThreadTest.suite(),
-//             TimeUnitTest.suite(),
-//             TreeMapTest.suite(),
-//             TreeSetTest.suite(),
-//             TreeSubMapTest.suite(),
-//             TreeSubSetTest.suite());
-//     }
+    // /**
+    // * Collects all JSR166 unit tests as one suite.
+    // */
+    // public static Test suite() {
+    // return newTestSuite(
+    // ForkJoinPoolTest.suite(),
+    // ForkJoinTaskTest.suite(),
+    // RecursiveActionTest.suite(),
+    // RecursiveTaskTest.suite(),
+    // LinkedTransferQueueTest.suite(),
+    // PhaserTest.suite(),
+    // ThreadLocalRandomTest.suite(),
+    // AbstractExecutorServiceTest.suite(),
+    // AbstractQueueTest.suite(),
+    // AbstractQueuedSynchronizerTest.suite(),
+    // AbstractQueuedLongSynchronizerTest.suite(),
+    // ArrayBlockingQueueTest.suite(),
+    // ArrayDequeTest.suite(),
+    // AtomicBooleanTest.suite(),
+    // AtomicIntegerArrayTest.suite(),
+    // AtomicIntegerFieldUpdaterTest.suite(),
+    // AtomicIntegerTest.suite(),
+    // AtomicLongArrayTest.suite(),
+    // AtomicLongFieldUpdaterTest.suite(),
+    // AtomicLongTest.suite(),
+    // AtomicMarkableReferenceTest.suite(),
+    // AtomicReferenceArrayTest.suite(),
+    // AtomicReferenceFieldUpdaterTest.suite(),
+    // AtomicReferenceTest.suite(),
+    // AtomicStampedReferenceTest.suite(),
+    // ConcurrentHashMapTest.suite(),
+    // ConcurrentLinkedDequeTest.suite(),
+    // ConcurrentLinkedQueueTest.suite(),
+    // ConcurrentSkipListMapTest.suite(),
+    // ConcurrentSkipListSubMapTest.suite(),
+    // ConcurrentSkipListSetTest.suite(),
+    // ConcurrentSkipListSubSetTest.suite(),
+    // CopyOnWriteArrayListTest.suite(),
+    // CopyOnWriteArraySetTest.suite(),
+    // CountDownLatchTest.suite(),
+    // CyclicBarrierTest.suite(),
+    // DelayQueueTest.suite(),
+    // EntryTest.suite(),
+    // ExchangerTest.suite(),
+    // ExecutorsTest.suite(),
+    // ExecutorCompletionServiceTest.suite(),
+    // FutureTaskTest.suite(),
+    // LinkedBlockingDequeTest.suite(),
+    // LinkedBlockingQueueTest.suite(),
+    // LinkedListTest.suite(),
+    // LockSupportTest.suite(),
+    // PriorityBlockingQueueTest.suite(),
+    // PriorityQueueTest.suite(),
+    // ReentrantLockTest.suite(),
+    // ReentrantReadWriteLockTest.suite(),
+    // ScheduledExecutorTest.suite(),
+    // ScheduledExecutorSubclassTest.suite(),
+    // SemaphoreTest.suite(),
+    // SynchronousQueueTest.suite(),
+    // SystemTest.suite(),
+    // ThreadLocalTest.suite(),
+    // ThreadPoolExecutorTest.suite(),
+    // ThreadPoolExecutorSubclassTest.suite(),
+    // ThreadTest.suite(),
+    // TimeUnitTest.suite(),
+    // TreeMapTest.suite(),
+    // TreeSetTest.suite(),
+    // TreeSubMapTest.suite(),
+    // TreeSubSetTest.suite());
+    // }
 
     public static long SHORT_DELAY_MS;
     public static long SMALL_DELAY_MS;
@@ -271,8 +248,7 @@ abstract class JSR166TestCase extends TestCase {
     public static long LONG_DELAY_MS;
 
     /**
-     * Returns the shortest timed delay. This could
-     * be reimplemented to use for example a Property.
+     * Returns the shortest timed delay. This could be reimplemented to use for example a Property.
      */
     protected long getShortDelay() {
         return 50;
@@ -283,22 +259,21 @@ abstract class JSR166TestCase extends TestCase {
      */
     protected void setDelays() {
         SHORT_DELAY_MS = getShortDelay();
-        SMALL_DELAY_MS  = SHORT_DELAY_MS * 5;
+        SMALL_DELAY_MS = SHORT_DELAY_MS * 5;
         MEDIUM_DELAY_MS = SHORT_DELAY_MS * 10;
-        LONG_DELAY_MS   = SHORT_DELAY_MS * 200;
+        LONG_DELAY_MS = SHORT_DELAY_MS * 200;
     }
 
     /**
-     * Returns a timeout in milliseconds to be used in tests that
-     * verify that operations block or time out.
+     * Returns a timeout in milliseconds to be used in tests that verify that operations block or
+     * time out.
      */
     long timeoutMillis() {
         return SHORT_DELAY_MS / 4;
     }
 
     /**
-     * Returns a new Date instance representing a time delayMillis
-     * milliseconds in the future.
+     * Returns a new Date instance representing a time delayMillis milliseconds in the future.
      */
     Date delayedDate(long delayMillis) {
         return new Date(System.currentTimeMillis() + delayMillis);
@@ -307,14 +282,12 @@ abstract class JSR166TestCase extends TestCase {
     /**
      * The first exception encountered if any threadAssertXXX method fails.
      */
-    private final AtomicReference<Throwable> threadFailure
-        = new AtomicReference<Throwable>(null);
+    private final AtomicReference<Throwable> threadFailure = new AtomicReference<Throwable>(null);
 
     /**
-     * Records an exception so that it can be rethrown later in the test
-     * harness thread, triggering a test case failure.  Only the first
-     * failure is recorded; subsequent calls to this method from within
-     * the same test have no effect.
+     * Records an exception so that it can be rethrown later in the test harness thread, triggering
+     * a test case failure. Only the first failure is recorded; subsequent calls to this method from
+     * within the same test have no effect.
      */
     public void threadRecordFailure(Throwable t) {
         threadFailure.compareAndSet(null, t);
@@ -327,9 +300,8 @@ abstract class JSR166TestCase extends TestCase {
     /**
      * Extra checks that get done for all test cases.
      *
-     * Triggers test case failure if any thread assertions have failed,
-     * by rethrowing, in the test harness thread, any exception recorded
-     * earlier by threadRecordFailure.
+     * Triggers test case failure if any thread assertions have failed, by rethrowing, in the test
+     * harness thread, any exception recorded earlier by threadRecordFailure.
      *
      * Triggers test case failure if interrupt status is set in the main thread.
      */
@@ -343,8 +315,7 @@ abstract class JSR166TestCase extends TestCase {
             else if (t instanceof Exception)
                 throw (Exception) t;
             else {
-                AssertionFailedError afe =
-                    new AssertionFailedError(t.toString());
+                AssertionFailedError afe = new AssertionFailedError(t.toString());
                 afe.initCause(t);
                 throw afe;
             }
@@ -355,9 +326,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like fail(reason), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like fail(reason), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadFail(String reason) {
         try {
@@ -369,9 +339,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertTrue(b), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertTrue(b), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertTrue(boolean b) {
         try {
@@ -383,9 +352,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertFalse(b), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertFalse(b), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertFalse(boolean b) {
         try {
@@ -397,9 +365,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertNull(x), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertNull(x), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertNull(Object x) {
         try {
@@ -411,9 +378,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertEquals(x, y), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertEquals(x, y), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertEquals(long x, long y) {
         try {
@@ -425,9 +391,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertEquals(x, y), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertEquals(x, y), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertEquals(Object x, Object y) {
         try {
@@ -441,9 +406,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Just like assertSame(x, y), but additionally recording (using
-     * threadRecordFailure) any AssertionFailedError thrown, so that
-     * the current testcase will fail.
+     * Just like assertSame(x, y), but additionally recording (using threadRecordFailure) any
+     * AssertionFailedError thrown, so that the current testcase will fail.
      */
     public void threadAssertSame(Object x, Object y) {
         try {
@@ -469,9 +433,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Records the given exception using {@link #threadRecordFailure},
-     * then rethrows the exception, wrapping it in an
-     * AssertionFailedError if necessary.
+     * Records the given exception using {@link #threadRecordFailure}, then rethrows the exception,
+     * wrapping it in an AssertionFailedError if necessary.
      */
     public void threadUnexpectedException(Throwable t) {
         threadRecordFailure(t);
@@ -481,17 +444,15 @@ abstract class JSR166TestCase extends TestCase {
         else if (t instanceof Error)
             throw (Error) t;
         else {
-            AssertionFailedError afe =
-                new AssertionFailedError("unexpected exception: " + t);
+            AssertionFailedError afe = new AssertionFailedError("unexpected exception: " + t);
             afe.initCause(t);
             throw afe;
         }
     }
 
     /**
-     * Delays, via Thread.sleep, for the given millisecond delay, but
-     * if the sleep is shorter than specified, may re-sleep or yield
-     * until time elapses.
+     * Delays, via Thread.sleep, for the given millisecond delay, but if the sleep is shorter than
+     * specified, may re-sleep or yield until time elapses.
      */
     static void delay(long millis) throws InterruptedException {
         long startTime = System.nanoTime();
@@ -516,7 +477,7 @@ abstract class JSR166TestCase extends TestCase {
         try {
             exec.shutdown();
             assertTrue("ExecutorService did not terminate in a timely manner",
-                       exec.awaitTermination(2 * LONG_DELAY_MS, MILLISECONDS));
+                    exec.awaitTermination(2 * LONG_DELAY_MS, MILLISECONDS));
         } catch (SecurityException ok) {
             // Allowed in case test doesn't have privs
         } catch (InterruptedException ie) {
@@ -525,8 +486,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Checks that thread does not terminate within the default
-     * millisecond delay of {@code timeoutMillis()}.
+     * Checks that thread does not terminate within the default millisecond delay of
+     * {@code timeoutMillis()}.
      */
     void assertThreadStaysAlive(Thread thread) {
         assertThreadStaysAlive(thread, timeoutMillis());
@@ -546,8 +507,8 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Checks that the threads do not terminate within the default
-     * millisecond delay of {@code timeoutMillis()}.
+     * Checks that the threads do not terminate within the default millisecond delay of
+     * {@code timeoutMillis()}.
      */
     void assertThreadsStayAlive(Thread... threads) {
         assertThreadsStayAlive(timeoutMillis(), threads);
@@ -568,8 +529,7 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Checks that future.get times out, with the default timeout of
-     * {@code timeoutMillis()}.
+     * Checks that future.get times out, with the default timeout of {@code timeoutMillis()}.
      */
     void assertFutureTimesOut(Future future) {
         assertFutureTimesOut(future, timeoutMillis());
@@ -586,7 +546,9 @@ abstract class JSR166TestCase extends TestCase {
         } catch (TimeoutException success) {
         } catch (Exception e) {
             threadUnexpectedException(e);
-        } finally { future.cancel(true); }
+        } finally {
+            future.cancel(true);
+        }
         assertTrue(millisElapsedSince(startTime) >= timeoutMillis);
     }
 
@@ -611,30 +573,28 @@ abstract class JSR166TestCase extends TestCase {
 
     // Some convenient Integer constants
 
-    public static final Integer zero  = new Integer(0);
-    public static final Integer one   = new Integer(1);
-    public static final Integer two   = new Integer(2);
+    public static final Integer zero = new Integer(0);
+    public static final Integer one = new Integer(1);
+    public static final Integer two = new Integer(2);
     public static final Integer three = new Integer(3);
-    public static final Integer four  = new Integer(4);
-    public static final Integer five  = new Integer(5);
-    public static final Integer six   = new Integer(6);
+    public static final Integer four = new Integer(4);
+    public static final Integer five = new Integer(5);
+    public static final Integer six = new Integer(6);
     public static final Integer seven = new Integer(7);
     public static final Integer eight = new Integer(8);
-    public static final Integer nine  = new Integer(9);
-    public static final Integer m1  = new Integer(-1);
-    public static final Integer m2  = new Integer(-2);
-    public static final Integer m3  = new Integer(-3);
-    public static final Integer m4  = new Integer(-4);
-    public static final Integer m5  = new Integer(-5);
-    public static final Integer m6  = new Integer(-6);
+    public static final Integer nine = new Integer(9);
+    public static final Integer m1 = new Integer(-1);
+    public static final Integer m2 = new Integer(-2);
+    public static final Integer m3 = new Integer(-3);
+    public static final Integer m4 = new Integer(-4);
+    public static final Integer m5 = new Integer(-5);
+    public static final Integer m6 = new Integer(-6);
     public static final Integer m10 = new Integer(-10);
 
     /**
-     * Runs Runnable r with a security policy that permits precisely
-     * the specified permissions.  If there is no current security
-     * manager, the runnable is run twice, both with and without a
-     * security manager.  We require that any security manager permit
-     * getPolicy/setPolicy.
+     * Runs Runnable r with a security policy that permits precisely the specified permissions. If
+     * there is no current security manager, the runnable is run twice, both with and without a
+     * security manager. We require that any security manager permit getPolicy/setPolicy.
      */
     public void runWithPermissions(Runnable r, Permission... permissions) {
         SecurityManager sm = System.getSecurityManager();
@@ -671,26 +631,36 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * A security policy where new permissions can be dynamically added
-     * or all cleared.
+     * A security policy where new permissions can be dynamically added or all cleared.
      */
     public static class AdjustablePolicy extends java.security.Policy {
         Permissions perms = new Permissions();
+
         AdjustablePolicy(Permission... permissions) {
             for (Permission permission : permissions)
                 perms.add(permission);
         }
-        void addPermission(Permission perm) { perms.add(perm); }
-        void clearPermissions() { perms = new Permissions(); }
+
+        void addPermission(Permission perm) {
+            perms.add(perm);
+        }
+
+        void clearPermissions() {
+            perms = new Permissions();
+        }
+
         public PermissionCollection getPermissions(CodeSource cs) {
             return perms;
         }
+
         public PermissionCollection getPermissions(ProtectionDomain pd) {
             return perms;
         }
+
         public boolean implies(ProtectionDomain pd, Permission p) {
             return perms.implies(p);
         }
+
         public void refresh() {}
     }
 
@@ -699,46 +669,39 @@ abstract class JSR166TestCase extends TestCase {
      */
     public static Policy permissivePolicy() {
         return new AdjustablePolicy
-            // Permissions j.u.c. needs directly
-            (new RuntimePermission("modifyThread"),
-             new RuntimePermission("getClassLoader"),
-             new RuntimePermission("setContextClassLoader"),
-             // Permissions needed to change permissions!
-             new SecurityPermission("getPolicy"),
-             new SecurityPermission("setPolicy"),
-             new RuntimePermission("setSecurityManager"),
-             // Permissions needed by the junit test harness
-             new RuntimePermission("accessDeclaredMembers"),
-             new PropertyPermission("*", "read"),
-             new java.io.FilePermission("<<ALL FILES>>", "read"));
+        // Permissions j.u.c. needs directly
+        (new RuntimePermission("modifyThread"), new RuntimePermission("getClassLoader"),
+                new RuntimePermission("setContextClassLoader"),
+                // Permissions needed to change permissions!
+                new SecurityPermission("getPolicy"), new SecurityPermission("setPolicy"),
+                new RuntimePermission("setSecurityManager"),
+                // Permissions needed by the junit test harness
+                new RuntimePermission("accessDeclaredMembers"), new PropertyPermission("*", "read"),
+                new java.io.FilePermission("<<ALL FILES>>", "read"));
     }
 
     /**
-     * Sleeps until the given time has elapsed.
-     * Throws AssertionFailedError if interrupted.
+     * Sleeps until the given time has elapsed. Throws AssertionFailedError if interrupted.
      */
     void sleep(long millis) {
         try {
             delay(millis);
         } catch (InterruptedException ie) {
-            AssertionFailedError afe =
-                new AssertionFailedError("Unexpected InterruptedException");
+            AssertionFailedError afe = new AssertionFailedError("Unexpected InterruptedException");
             afe.initCause(ie);
             throw afe;
         }
     }
 
     /**
-     * Spin-waits up to the specified number of milliseconds for the given
-     * thread to enter a wait state: BLOCKED, WAITING, or TIMED_WAITING.
+     * Spin-waits up to the specified number of milliseconds for the given thread to enter a wait
+     * state: BLOCKED, WAITING, or TIMED_WAITING.
      */
     void waitForThreadToEnterWaitState(Thread thread, long timeoutMillis) {
         long startTime = System.nanoTime();
         for (;;) {
             Thread.State s = thread.getState();
-            if (s == Thread.State.BLOCKED ||
-                s == Thread.State.WAITING ||
-                s == Thread.State.TIMED_WAITING)
+            if (s == Thread.State.BLOCKED || s == Thread.State.WAITING || s == Thread.State.TIMED_WAITING)
                 return;
             else if (s == Thread.State.TERMINATED)
                 fail("Unexpected thread termination");
@@ -751,17 +714,16 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Waits up to LONG_DELAY_MS for the given thread to enter a wait
-     * state: BLOCKED, WAITING, or TIMED_WAITING.
+     * Waits up to LONG_DELAY_MS for the given thread to enter a wait state: BLOCKED, WAITING, or
+     * TIMED_WAITING.
      */
     void waitForThreadToEnterWaitState(Thread thread) {
         waitForThreadToEnterWaitState(thread, LONG_DELAY_MS);
     }
 
     /**
-     * Returns the number of milliseconds since time given by
-     * startNanoTime, which must have been previously returned from a
-     * call to {@link System.nanoTime()}.
+     * Returns the number of milliseconds since time given by startNanoTime, which must have been
+     * previously returned from a call to {@link System.nanoTime()}.
      */
     long millisElapsedSince(long startNanoTime) {
         return NANOSECONDS.toMillis(System.nanoTime() - startNanoTime);
@@ -778,9 +740,9 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Waits for the specified time (in milliseconds) for the thread
-     * to terminate (using {@link Thread#join(long)}), else interrupts
-     * the thread (in the hope that it may terminate later) and fails.
+     * Waits for the specified time (in milliseconds) for the thread to terminate (using
+     * {@link Thread#join(long)}), else interrupts the thread (in the hope that it may terminate
+     * later) and fails.
      */
     void awaitTermination(Thread t, long timeoutMillis) {
         try {
@@ -796,9 +758,9 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     /**
-     * Waits for LONG_DELAY_MS milliseconds for the thread to
-     * terminate (using {@link Thread#join(long)}), else interrupts
-     * the thread (in the hope that it may terminate later) and fails.
+     * Waits for LONG_DELAY_MS milliseconds for the thread to terminate (using
+     * {@link Thread#join(long)}), else interrupts the thread (in the hope that it may terminate
+     * later) and fails.
      */
     void awaitTermination(Thread t) {
         awaitTermination(t, LONG_DELAY_MS);
@@ -832,7 +794,7 @@ abstract class JSR166TestCase extends TestCase {
                 realRun();
                 threadShouldThrow(exceptionClass.getSimpleName());
             } catch (Throwable t) {
-                if (! exceptionClass.isInstance(t))
+                if (!exceptionClass.isInstance(t))
                     threadUnexpectedException(t);
             }
         }
@@ -852,7 +814,7 @@ abstract class JSR166TestCase extends TestCase {
                 realRun();
                 threadShouldThrow(exceptionClass.getSimpleName());
             } catch (Throwable t) {
-                if (! exceptionClass.isInstance(t))
+                if (!exceptionClass.isInstance(t))
                     threadUnexpectedException(t);
             }
         }
@@ -886,8 +848,7 @@ abstract class JSR166TestCase extends TestCase {
         }
     }
 
-    public abstract class CheckedInterruptedCallable<T>
-        implements Callable<T> {
+    public abstract class CheckedInterruptedCallable<T> implements Callable<T> {
         protected abstract T realCall() throws Throwable;
 
         public final T call() {
@@ -909,13 +870,17 @@ abstract class JSR166TestCase extends TestCase {
     }
 
     public static class NoOpCallable implements Callable {
-        public Object call() { return Boolean.TRUE; }
+        public Object call() {
+            return Boolean.TRUE;
+        }
     }
 
     public static final String TEST_STRING = "a test string";
 
     public static class StringTask implements Callable<String> {
-        public String call() { return TEST_STRING; }
+        public String call() {
+            return TEST_STRING;
+        }
     }
 
     public Callable<String> latchAwaitingStringTask(final CountDownLatch latch) {
@@ -923,16 +888,19 @@ abstract class JSR166TestCase extends TestCase {
             protected String realCall() {
                 try {
                     latch.await();
-                } catch (InterruptedException quittingTime) {}
+                } catch (InterruptedException quittingTime) {
+                }
                 return TEST_STRING;
-            }};
+            }
+        };
     }
 
     public Runnable awaiter(final CountDownLatch latch) {
         return new CheckedRunnable() {
             public void realRun() throws InterruptedException {
                 await(latch);
-            }};
+            }
+        };
     }
 
     public void await(CountDownLatch latch) {
@@ -951,31 +919,35 @@ abstract class JSR166TestCase extends TestCase {
         }
     }
 
-//     /**
-//      * Spin-waits up to LONG_DELAY_MS until flag becomes true.
-//      */
-//     public void await(AtomicBoolean flag) {
-//         await(flag, LONG_DELAY_MS);
-//     }
+    // /**
+    // * Spin-waits up to LONG_DELAY_MS until flag becomes true.
+    // */
+    // public void await(AtomicBoolean flag) {
+    // await(flag, LONG_DELAY_MS);
+    // }
 
-//     /**
-//      * Spin-waits up to the specified timeout until flag becomes true.
-//      */
-//     public void await(AtomicBoolean flag, long timeoutMillis) {
-//         long startTime = System.nanoTime();
-//         while (!flag.get()) {
-//             if (millisElapsedSince(startTime) > timeoutMillis)
-//                 throw new AssertionFailedError("timed out");
-//             Thread.yield();
-//         }
-//     }
+    // /**
+    // * Spin-waits up to the specified timeout until flag becomes true.
+    // */
+    // public void await(AtomicBoolean flag, long timeoutMillis) {
+    // long startTime = System.nanoTime();
+    // while (!flag.get()) {
+    // if (millisElapsedSince(startTime) > timeoutMillis)
+    // throw new AssertionFailedError("timed out");
+    // Thread.yield();
+    // }
+    // }
 
     public static class NPETask implements Callable<String> {
-        public String call() { throw new NullPointerException(); }
+        public String call() {
+            throw new NullPointerException();
+        }
     }
 
     public static class CallableOne implements Callable<Integer> {
-        public Integer call() { return one; }
+        public Integer call() {
+            return one;
+        }
     }
 
     public class ShortRunnable extends CheckedRunnable {
@@ -1000,7 +972,8 @@ abstract class JSR166TestCase extends TestCase {
         protected void realRun() {
             try {
                 delay(SMALL_DELAY_MS);
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
@@ -1028,15 +1001,18 @@ abstract class JSR166TestCase extends TestCase {
             protected void realRun() {
                 try {
                     delay(timeoutMillis);
-                } catch (InterruptedException ok) {}
-            }};
+                } catch (InterruptedException ok) {
+                }
+            }
+        };
     }
 
     public class MediumPossiblyInterruptedRunnable extends CheckedRunnable {
         protected void realRun() {
             try {
                 delay(MEDIUM_DELAY_MS);
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
@@ -1044,7 +1020,8 @@ abstract class JSR166TestCase extends TestCase {
         protected void realRun() {
             try {
                 delay(LONG_DELAY_MS);
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
@@ -1063,59 +1040,73 @@ abstract class JSR166TestCase extends TestCase {
 
     public static TrackedRunnable trackedRunnable(final long timeoutMillis) {
         return new TrackedRunnable() {
-                private volatile boolean done = false;
-                public boolean isDone() { return done; }
-                public void run() {
-                    try {
-                        delay(timeoutMillis);
-                        done = true;
-                    } catch (InterruptedException ok) {}
+            private volatile boolean done = false;
+
+            public boolean isDone() {
+                return done;
+            }
+
+            public void run() {
+                try {
+                    delay(timeoutMillis);
+                    done = true;
+                } catch (InterruptedException ok) {
                 }
-            };
+            }
+        };
     }
 
     public static class TrackedShortRunnable implements Runnable {
         public volatile boolean done = false;
+
         public void run() {
             try {
                 delay(SHORT_DELAY_MS);
                 done = true;
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
     public static class TrackedSmallRunnable implements Runnable {
         public volatile boolean done = false;
+
         public void run() {
             try {
                 delay(SMALL_DELAY_MS);
                 done = true;
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
     public static class TrackedMediumRunnable implements Runnable {
         public volatile boolean done = false;
+
         public void run() {
             try {
                 delay(MEDIUM_DELAY_MS);
                 done = true;
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
     public static class TrackedLongRunnable implements Runnable {
         public volatile boolean done = false;
+
         public void run() {
             try {
                 delay(LONG_DELAY_MS);
                 done = true;
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
         }
     }
 
     public static class TrackedNoOpRunnable implements Runnable {
         public volatile boolean done = false;
+
         public void run() {
             done = true;
         }
@@ -1123,60 +1114,63 @@ abstract class JSR166TestCase extends TestCase {
 
     public static class TrackedCallable implements Callable {
         public volatile boolean done = false;
+
         public Object call() {
             try {
                 delay(SMALL_DELAY_MS);
                 done = true;
-            } catch (InterruptedException ok) {}
+            } catch (InterruptedException ok) {
+            }
             return Boolean.TRUE;
         }
     }
 
-//     /**
-//      * Analog of CheckedRunnable for RecursiveAction
-//      */
-//     public abstract class CheckedRecursiveAction extends RecursiveAction {
-//         protected abstract void realCompute() throws Throwable;
+    // /**
+    // * Analog of CheckedRunnable for RecursiveAction
+    // */
+    // public abstract class CheckedRecursiveAction extends RecursiveAction {
+    // protected abstract void realCompute() throws Throwable;
 
-//         public final void compute() {
-//             try {
-//                 realCompute();
-//             } catch (Throwable t) {
-//                 threadUnexpectedException(t);
-//             }
-//         }
-//     }
+    // public final void compute() {
+    // try {
+    // realCompute();
+    // } catch (Throwable t) {
+    // threadUnexpectedException(t);
+    // }
+    // }
+    // }
 
-//     /**
-//      * Analog of CheckedCallable for RecursiveTask
-//      */
-//     public abstract class CheckedRecursiveTask<T> extends RecursiveTask<T> {
-//         protected abstract T realCompute() throws Throwable;
+    // /**
+    // * Analog of CheckedCallable for RecursiveTask
+    // */
+    // public abstract class CheckedRecursiveTask<T> extends RecursiveTask<T> {
+    // protected abstract T realCompute() throws Throwable;
 
-//         public final T compute() {
-//             try {
-//                 return realCompute();
-//             } catch (Throwable t) {
-//                 threadUnexpectedException(t);
-//                 return null;
-//             }
-//         }
-//     }
+    // public final T compute() {
+    // try {
+    // return realCompute();
+    // } catch (Throwable t) {
+    // threadUnexpectedException(t);
+    // return null;
+    // }
+    // }
+    // }
 
     /**
      * For use as RejectedExecutionHandler in constructors
      */
     public static class NoOpREHandler implements RejectedExecutionHandler {
-        public void rejectedExecution(Runnable r,
-                                      ThreadPoolExecutor executor) {}
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {}
     }
 
     /**
-     * A CyclicBarrier that uses timed await and fails with
-     * AssertionFailedErrors instead of throwing checked exceptions.
+     * A CyclicBarrier that uses timed await and fails with AssertionFailedErrors instead of
+     * throwing checked exceptions.
      */
     public class CheckedBarrier extends CyclicBarrier {
-        public CheckedBarrier(int parties) { super(parties); }
+        public CheckedBarrier(int parties) {
+            super(parties);
+        }
 
         public int await() {
             try {
@@ -1184,8 +1178,7 @@ abstract class JSR166TestCase extends TestCase {
             } catch (TimeoutException e) {
                 throw new AssertionFailedError("timed out");
             } catch (Exception e) {
-                AssertionFailedError afe =
-                    new AssertionFailedError("Unexpected exception: " + e);
+                AssertionFailedError afe = new AssertionFailedError("Unexpected exception: " + e);
                 afe.initCause(e);
                 throw afe;
             }
@@ -1205,15 +1198,18 @@ abstract class JSR166TestCase extends TestCase {
             try {
                 q.element();
                 shouldThrow();
-            } catch (NoSuchElementException success) {}
+            } catch (NoSuchElementException success) {
+            }
             try {
                 q.iterator().next();
                 shouldThrow();
-            } catch (NoSuchElementException success) {}
+            } catch (NoSuchElementException success) {
+            }
             try {
                 q.remove();
                 shouldThrow();
-            } catch (NoSuchElementException success) {}
+            } catch (NoSuchElementException success) {
+            }
         } catch (InterruptedException ie) {
             threadUnexpectedException(ie);
         }
@@ -1227,8 +1223,7 @@ abstract class JSR166TestCase extends TestCase {
             oos.writeObject(o);
             oos.flush();
             oos.close();
-            ObjectInputStream ois = new ObjectInputStream
-                (new ByteArrayInputStream(bos.toByteArray()));
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
             T clone = (T) ois.readObject();
             assertSame(o.getClass(), clone.getClass());
             return clone;

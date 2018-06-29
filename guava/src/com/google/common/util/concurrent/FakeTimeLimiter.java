@@ -35,20 +35,18 @@ import java.util.concurrent.TimeUnit;
 @CanIgnoreReturnValue
 @GwtIncompatible
 public final class FakeTimeLimiter implements TimeLimiter {
-  @Override
-  public <T> T newProxy(
-      T target, Class<T> interfaceType, long timeoutDuration, TimeUnit timeoutUnit) {
-    checkNotNull(target);
-    checkNotNull(interfaceType);
-    checkNotNull(timeoutUnit);
-    return target; // ha ha
-  }
+    @Override
+    public <T> T newProxy(T target, Class<T> interfaceType, long timeoutDuration, TimeUnit timeoutUnit) {
+        checkNotNull(target);
+        checkNotNull(interfaceType);
+        checkNotNull(timeoutUnit);
+        return target; // ha ha
+    }
 
-  @Override
-  public <T> T callWithTimeout(
-      Callable<T> callable, long timeoutDuration, TimeUnit timeoutUnit, boolean amInterruptible)
-      throws Exception {
-    checkNotNull(timeoutUnit);
-    return callable.call(); // fooled you
-  }
+    @Override
+    public <T> T callWithTimeout(Callable<T> callable, long timeoutDuration, TimeUnit timeoutUnit,
+            boolean amInterruptible) throws Exception {
+        checkNotNull(timeoutUnit);
+        return callable.call(); // fooled you
+    }
 }

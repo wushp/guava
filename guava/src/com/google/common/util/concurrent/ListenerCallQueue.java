@@ -29,112 +29,110 @@ import javax.annotation.concurrent.GuardedBy;
  * A special purpose queue/executor that executes listener callbacks serially on a configured
  * executor. Each callback task can be enqueued and executed as separate phases.
  *
- * <p>This class is very similar to {@link SerializingExecutor} with the exception that tasks can be
+ * <p>
+ * This class is very similar to {@link SerializingExecutor} with the exception that tasks can be
  * enqueued without necessarily executing immediately.
  */
 @GwtIncompatible
 final class ListenerCallQueue<L> implements Runnable {
-  // TODO(cpovirk): consider using the logger associated with listener.getClass().
-  private static final Logger logger = Logger.getLogger(ListenerCallQueue.class.getName());
+    // TODO(cpovirk): consider using the logger associated with listener.getClass().
+    private static final Logger logger = Logger.getLogger(ListenerCallQueue.class.getName());
 
-  abstract static class Callback<L> {
-    private final String methodCall;
+    abstract static class Callback<L> {
+        private final String methodCall;
 
-    Callback(String methodCall) {
-      this.methodCall = methodCall;
+        Callback(String methodCall) {
+            this.methodCall = methodCall;
+        }
+
+        abstract void call(L listener);
+
+        /** Helper method to add this callback to all the queues. */
+        void enqueueOn(Iterable<ListenerCallQueue<L>> queues) {
+            for (ListenerCallQueue<L> queue : queues) {
+                queue.add(this);
+            }
+        }
     }
 
-    abstract void call(L listener);
+    private final L listener;
+    private final Executor executor;
 
-    /** Helper method to add this callback to all the queues. */
-    void enqueueOn(Iterable<ListenerCallQueue<L>> queues) {
-      for (ListenerCallQueue<L> queue : queues) {
-        queue.add(this);
-      }
+    @GuardedBy("this")
+    private final Queue<Callback<L>> waitQueue = Queues.newArrayDeque();
+
+    @GuardedBy("this")
+    private boolean isThreadScheduled;
+
+    ListenerCallQueue(L listener, Executor executor) {
+        this.listener = checkNotNull(listener);
+        this.executor = checkNotNull(executor);
     }
-  }
 
-  private final L listener;
-  private final Executor executor;
-
-  @GuardedBy("this")
-  private final Queue<Callback<L>> waitQueue = Queues.newArrayDeque();
-
-  @GuardedBy("this")
-  private boolean isThreadScheduled;
-
-  ListenerCallQueue(L listener, Executor executor) {
-    this.listener = checkNotNull(listener);
-    this.executor = checkNotNull(executor);
-  }
-
-  /** Enqueues a task to be run. */
-  synchronized void add(Callback<L> callback) {
-    waitQueue.add(callback);
-  }
-
-  /** Executes all listeners {@linkplain #add added} prior to this call, serially and in order. */
-  void execute() {
-    boolean scheduleTaskRunner = false;
-    synchronized (this) {
-      if (!isThreadScheduled) {
-        isThreadScheduled = true;
-        scheduleTaskRunner = true;
-      }
+    /** Enqueues a task to be run. */
+    synchronized void add(Callback<L> callback) {
+        waitQueue.add(callback);
     }
-    if (scheduleTaskRunner) {
-      try {
-        executor.execute(this);
-      } catch (RuntimeException e) {
-        // reset state in case of an error so that later calls to execute will actually do something
+
+    /** Executes all listeners {@linkplain #add added} prior to this call, serially and in order. */
+    void execute() {
+        boolean scheduleTaskRunner = false;
         synchronized (this) {
-          isThreadScheduled = false;
+            if (!isThreadScheduled) {
+                isThreadScheduled = true;
+                scheduleTaskRunner = true;
+            }
         }
-        // Log it and keep going.
-        logger.log(
-            Level.SEVERE,
-            "Exception while running callbacks for " + listener + " on " + executor,
-            e);
-        throw e;
-      }
+        if (scheduleTaskRunner) {
+            try {
+                executor.execute(this);
+            } catch (RuntimeException e) {
+                // reset state in case of an error so that later calls to execute will actually do
+                // something
+                synchronized (this) {
+                    isThreadScheduled = false;
+                }
+                // Log it and keep going.
+                logger.log(Level.SEVERE, "Exception while running callbacks for " + listener + " on " + executor, e);
+                throw e;
+            }
+        }
     }
-  }
 
-  @Override
-  public void run() {
-    boolean stillRunning = true;
-    try {
-      while (true) {
-        Callback<L> nextToRun;
-        synchronized (ListenerCallQueue.this) {
-          Preconditions.checkState(isThreadScheduled);
-          nextToRun = waitQueue.poll();
-          if (nextToRun == null) {
-            isThreadScheduled = false;
-            stillRunning = false;
-            break;
-          }
-        }
-
-        // Always run while _not_ holding the lock, to avoid deadlocks.
+    @Override
+    public void run() {
+        boolean stillRunning = true;
         try {
-          nextToRun.call(listener);
-        } catch (RuntimeException e) {
-          // Log it and keep going.
-          logger.log(
-              Level.SEVERE,
-              "Exception while executing callback: " + listener + "." + nextToRun.methodCall,
-              e);
+            while (true) {
+                Callback<L> nextToRun;
+                synchronized (ListenerCallQueue.this) {
+                    Preconditions.checkState(isThreadScheduled);
+                    nextToRun = waitQueue.poll();
+                    if (nextToRun == null) {
+                        isThreadScheduled = false;
+                        stillRunning = false;
+                        break;
+                    }
+                }
+
+                // Always run while _not_ holding the lock, to avoid deadlocks.
+                try {
+                    nextToRun.call(listener);
+                } catch (RuntimeException e) {
+                    // Log it and keep going.
+                    logger.log(Level.SEVERE,
+                            "Exception while executing callback: " + listener + "." + nextToRun.methodCall, e);
+                }
+            }
+        } finally {
+            if (stillRunning) {
+                // An Error is bubbling up. We should mark ourselves as no longer running. That way,
+                // if
+                // anyone tries to keep using us, we won't be corrupted.
+                synchronized (ListenerCallQueue.this) {
+                    isThreadScheduled = false;
+                }
+            }
         }
-      }
-    } finally {
-      if (stillRunning) {
-        // An Error is bubbling up. We should mark ourselves as no longer running. That way, if
-        // anyone tries to keep using us, we won't be corrupted.
-        synchronized (ListenerCallQueue.this) {
-          isThreadScheduled = false;
-        }
-      }
     }
-  }
 }

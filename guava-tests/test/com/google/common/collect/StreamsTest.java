@@ -43,241 +43,197 @@ import junit.framework.TestCase;
  * Unit test for {@link Streams}.
  */
 public class StreamsTest extends TestCase {
-  /*
-   * Full and proper black-box testing of a Stream-returning method is extremely involved, and is
-   * overkill when nearly all Streams are produced using well-tested JDK calls. So, we cheat and
-   * just test that the toArray() contents are as expected.
-   */
-  public void testStream_nonCollection() {
-    assertThat(stream(FluentIterable.of())).isEmpty();
-    assertThat(stream(FluentIterable.of("a"))).containsExactly("a");
-    assertThat(stream(FluentIterable.of(1, 2, 3)).filter(n -> n > 1)).containsExactly(2, 3);
-  }
+    /*
+     * Full and proper black-box testing of a Stream-returning method is extremely involved, and is
+     * overkill when nearly all Streams are produced using well-tested JDK calls. So, we cheat and
+     * just test that the toArray() contents are as expected.
+     */
+    public void testStream_nonCollection() {
+        assertThat(stream(FluentIterable.of())).isEmpty();
+        assertThat(stream(FluentIterable.of("a"))).containsExactly("a");
+        assertThat(stream(FluentIterable.of(1, 2, 3)).filter(n -> n > 1)).containsExactly(2, 3);
+    }
 
-  @SuppressWarnings("deprecation")
-  public void testStream_collection() {
-    assertThat(stream(Arrays.asList())).isEmpty();
-    assertThat(stream(Arrays.asList("a"))).containsExactly("a");
-    assertThat(stream(Arrays.asList(1, 2, 3)).filter(n -> n > 1)).containsExactly(2, 3);
-  }
+    @SuppressWarnings("deprecation")
+    public void testStream_collection() {
+        assertThat(stream(Arrays.asList())).isEmpty();
+        assertThat(stream(Arrays.asList("a"))).containsExactly("a");
+        assertThat(stream(Arrays.asList(1, 2, 3)).filter(n -> n > 1)).containsExactly(2, 3);
+    }
 
-  public void testStream_iterator() {
-    assertThat(stream(Arrays.asList().iterator())).isEmpty();
-    assertThat(stream(Arrays.asList("a").iterator())).containsExactly("a");
-    assertThat(stream(Arrays.asList(1, 2, 3).iterator()).filter(n -> n > 1)).containsExactly(2, 3);
-  }
+    public void testStream_iterator() {
+        assertThat(stream(Arrays.asList().iterator())).isEmpty();
+        assertThat(stream(Arrays.asList("a").iterator())).containsExactly("a");
+        assertThat(stream(Arrays.asList(1, 2, 3).iterator()).filter(n -> n > 1)).containsExactly(2, 3);
+    }
 
-  public void testStream_googleOptional() {
-    assertThat(stream(com.google.common.base.Optional.absent())).isEmpty();
-    assertThat(stream(com.google.common.base.Optional.of("a"))).containsExactly("a");
-  }
+    public void testStream_googleOptional() {
+        assertThat(stream(com.google.common.base.Optional.absent())).isEmpty();
+        assertThat(stream(com.google.common.base.Optional.of("a"))).containsExactly("a");
+    }
 
-  public void testStream_javaOptional() {
-    assertThat(stream(java.util.Optional.empty())).isEmpty();
-    assertThat(stream(java.util.Optional.of("a"))).containsExactly("a");
-  }
-  
-  public void testFindLast_refStream() {
-    Truth8.assertThat(findLast(Stream.of())).isEmpty();
-    Truth8.assertThat(findLast(Stream.of("a", "b", "c", "d"))).hasValue("d");
+    public void testStream_javaOptional() {
+        assertThat(stream(java.util.Optional.empty())).isEmpty();
+        assertThat(stream(java.util.Optional.of("a"))).containsExactly("a");
+    }
 
-    // test with a large, not-subsized Spliterator
-    List<Integer> list =
-        IntStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
-    Truth8.assertThat(findLast(list.stream())).hasValue(10000);
+    public void testFindLast_refStream() {
+        Truth8.assertThat(findLast(Stream.of())).isEmpty();
+        Truth8.assertThat(findLast(Stream.of("a", "b", "c", "d"))).hasValue("d");
 
-    // no way to find out the stream is empty without walking its spliterator
-    Truth8.assertThat(findLast(list.stream().filter(i -> i < 0))).isEmpty();
-  }
+        // test with a large, not-subsized Spliterator
+        List<Integer> list = IntStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
+        Truth8.assertThat(findLast(list.stream())).hasValue(10000);
 
-  public void testFindLast_intStream() {
-    Truth.assertThat(findLast(IntStream.of())).isEqualTo(OptionalInt.empty());
-    Truth.assertThat(findLast(IntStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalInt.of(5));
+        // no way to find out the stream is empty without walking its spliterator
+        Truth8.assertThat(findLast(list.stream().filter(i -> i < 0))).isEmpty();
+    }
 
-    // test with a large, not-subsized Spliterator
-    List<Integer> list =
-        IntStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
-    Truth.assertThat(findLast(list.stream().mapToInt(i -> i))).isEqualTo(OptionalInt.of(10000));
+    public void testFindLast_intStream() {
+        Truth.assertThat(findLast(IntStream.of())).isEqualTo(OptionalInt.empty());
+        Truth.assertThat(findLast(IntStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalInt.of(5));
 
-    // no way to find out the stream is empty without walking its spliterator
-    Truth.assertThat(findLast(list.stream().mapToInt(i -> i).filter(i -> i < 0)))
-        .isEqualTo(OptionalInt.empty());
-  }
+        // test with a large, not-subsized Spliterator
+        List<Integer> list = IntStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
+        Truth.assertThat(findLast(list.stream().mapToInt(i -> i))).isEqualTo(OptionalInt.of(10000));
 
-  public void testFindLast_longStream() {
-    Truth.assertThat(findLast(LongStream.of())).isEqualTo(OptionalLong.empty());
-    Truth.assertThat(findLast(LongStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalLong.of(5));
+        // no way to find out the stream is empty without walking its spliterator
+        Truth.assertThat(findLast(list.stream().mapToInt(i -> i).filter(i -> i < 0))).isEqualTo(OptionalInt.empty());
+    }
 
-    // test with a large, not-subsized Spliterator
-    List<Long> list =
-        LongStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
-    Truth.assertThat(findLast(list.stream().mapToLong(i -> i))).isEqualTo(OptionalLong.of(10000));
+    public void testFindLast_longStream() {
+        Truth.assertThat(findLast(LongStream.of())).isEqualTo(OptionalLong.empty());
+        Truth.assertThat(findLast(LongStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalLong.of(5));
 
-    // no way to find out the stream is empty without walking its spliterator
-    Truth.assertThat(findLast(list.stream().mapToLong(i -> i).filter(i -> i < 0)))
-        .isEqualTo(OptionalLong.empty());
-  }
+        // test with a large, not-subsized Spliterator
+        List<Long> list = LongStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
+        Truth.assertThat(findLast(list.stream().mapToLong(i -> i))).isEqualTo(OptionalLong.of(10000));
 
-  public void testFindLast_doubleStream() {
-    Truth.assertThat(findLast(DoubleStream.of())).isEqualTo(OptionalDouble.empty());
-    Truth.assertThat(findLast(DoubleStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalDouble.of(5));
+        // no way to find out the stream is empty without walking its spliterator
+        Truth.assertThat(findLast(list.stream().mapToLong(i -> i).filter(i -> i < 0))).isEqualTo(OptionalLong.empty());
+    }
 
-    // test with a large, not-subsized Spliterator
-    List<Long> list =
-        LongStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
-    Truth.assertThat(findLast(list.stream().mapToDouble(i -> i)))
-        .isEqualTo(OptionalDouble.of(10000));
+    public void testFindLast_doubleStream() {
+        Truth.assertThat(findLast(DoubleStream.of())).isEqualTo(OptionalDouble.empty());
+        Truth.assertThat(findLast(DoubleStream.of(1, 2, 3, 4, 5))).isEqualTo(OptionalDouble.of(5));
 
-    // no way to find out the stream is empty without walking its spliterator
-    Truth.assertThat(findLast(list.stream().mapToDouble(i -> i).filter(i -> i < 0)))
-        .isEqualTo(OptionalDouble.empty());
-  }
+        // test with a large, not-subsized Spliterator
+        List<Long> list = LongStream.rangeClosed(0, 10000).boxed().collect(Collectors.toCollection(LinkedList::new));
+        Truth.assertThat(findLast(list.stream().mapToDouble(i -> i))).isEqualTo(OptionalDouble.of(10000));
 
-  public void testConcat_refStream() {
-    assertThat(Streams.concat(Stream.of("a"), Stream.of("b"), Stream.empty(), Stream.of("c", "d")))
-        .containsExactly("a", "b", "c", "d")
-        .inOrder();
-  }
+        // no way to find out the stream is empty without walking its spliterator
+        Truth.assertThat(findLast(list.stream().mapToDouble(i -> i).filter(i -> i < 0)))
+                .isEqualTo(OptionalDouble.empty());
+    }
 
-  public void testConcat_intStream() {
-    assertThat(
-            Streams.concat(IntStream.of(1), IntStream.of(2), IntStream.empty(), IntStream.of(3, 4)))
-        .containsExactly(1, 2, 3, 4)
-        .inOrder();
-  }
+    public void testConcat_refStream() {
+        assertThat(Streams.concat(Stream.of("a"), Stream.of("b"), Stream.empty(), Stream.of("c", "d")))
+                .containsExactly("a", "b", "c", "d").inOrder();
+    }
 
-  public void testConcat_longStream() {
-    assertThat(
-            Streams.concat(
-                LongStream.of(1), LongStream.of(2), LongStream.empty(), LongStream.of(3, 4)))
-        .containsExactly(1L, 2L, 3L, 4L)
-        .inOrder();
-  }
+    public void testConcat_intStream() {
+        assertThat(Streams.concat(IntStream.of(1), IntStream.of(2), IntStream.empty(), IntStream.of(3, 4)))
+                .containsExactly(1, 2, 3, 4).inOrder();
+    }
 
-  public void testConcat_doubleStream() {
-    assertThat(
-            Streams.concat(
-                DoubleStream.of(1),
-                DoubleStream.of(2),
-                DoubleStream.empty(),
-                DoubleStream.of(3, 4)))
-        .containsExactly(1.0, 2.0, 3.0, 4.0)
-        .inOrder();
-  }
+    public void testConcat_longStream() {
+        assertThat(Streams.concat(LongStream.of(1), LongStream.of(2), LongStream.empty(), LongStream.of(3, 4)))
+                .containsExactly(1L, 2L, 3L, 4L).inOrder();
+    }
 
-  public void testStream_optionalInt() {
-    assertThat(stream(java.util.OptionalInt.empty())).isEmpty();
-    assertThat(stream(java.util.OptionalInt.of(5))).containsExactly(5);
-  }
+    public void testConcat_doubleStream() {
+        assertThat(Streams.concat(DoubleStream.of(1), DoubleStream.of(2), DoubleStream.empty(), DoubleStream.of(3, 4)))
+                .containsExactly(1.0, 2.0, 3.0, 4.0).inOrder();
+    }
 
-  public void testStream_optionalLong() {
-    assertThat(stream(java.util.OptionalLong.empty())).isEmpty();
-    assertThat(stream(java.util.OptionalLong.of(5L))).containsExactly(5L);
-  }
+    public void testStream_optionalInt() {
+        assertThat(stream(java.util.OptionalInt.empty())).isEmpty();
+        assertThat(stream(java.util.OptionalInt.of(5))).containsExactly(5);
+    }
 
-  public void testStream_optionalDouble() {
-    assertThat(stream(java.util.OptionalDouble.empty())).isEmpty();
-    assertThat(stream(java.util.OptionalDouble.of(5.0))).containsExactly(5.0);
-  }
-  
-  private void testMapWithIndex(Function<Collection<String>, Stream<String>> collectionImpl) {
-    SpliteratorTester.of(
-            () ->
-                Streams.mapWithIndex(
-                        collectionImpl.apply(ImmutableList.of()), (str, i) -> str + ":" + i)
-                    .spliterator())
-        .expect(ImmutableList.of());
-    SpliteratorTester.of(
-            () ->
-                Streams.mapWithIndex(
-                        collectionImpl.apply(ImmutableList.of("a", "b", "c", "d", "e")),
-                        (str, i) -> str + ":" + i)
-                    .spliterator())
-        .expect("a:0", "b:1", "c:2", "d:3", "e:4");
-  }
+    public void testStream_optionalLong() {
+        assertThat(stream(java.util.OptionalLong.empty())).isEmpty();
+        assertThat(stream(java.util.OptionalLong.of(5L))).containsExactly(5L);
+    }
 
-  public void testMapWithIndex_arrayListSource() {
-    testMapWithIndex(elems -> new ArrayList<>(elems).stream());
-  }
+    public void testStream_optionalDouble() {
+        assertThat(stream(java.util.OptionalDouble.empty())).isEmpty();
+        assertThat(stream(java.util.OptionalDouble.of(5.0))).containsExactly(5.0);
+    }
 
-  public void testMapWithIndex_linkedHashSetSource() {
-    testMapWithIndex(elems -> new LinkedHashSet<>(elems).stream());
-  }
+    private void testMapWithIndex(Function<Collection<String>, Stream<String>> collectionImpl) {
+        SpliteratorTester.of(() -> Streams
+                .mapWithIndex(collectionImpl.apply(ImmutableList.of()), (str, i) -> str + ":" + i).spliterator())
+                .expect(ImmutableList.of());
+        SpliteratorTester.of(() -> Streams.mapWithIndex(collectionImpl.apply(ImmutableList.of("a", "b", "c", "d", "e")),
+                (str, i) -> str + ":" + i).spliterator()).expect("a:0", "b:1", "c:2", "d:3", "e:4");
+    }
 
-  public void testMapWithIndex_unsizedSource() {
-    testMapWithIndex(
-        elems -> Stream.of((Object) null).flatMap(unused -> ImmutableList.copyOf(elems).stream()));
-  }
+    public void testMapWithIndex_arrayListSource() {
+        testMapWithIndex(elems -> new ArrayList<>(elems).stream());
+    }
 
-  public void testMapWithIndex_intStream() {
-    SpliteratorTester.of(
-            () -> Streams.mapWithIndex(IntStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
-        .expect("0:0", "1:1", "2:2");
-  }
+    public void testMapWithIndex_linkedHashSetSource() {
+        testMapWithIndex(elems -> new LinkedHashSet<>(elems).stream());
+    }
 
-  public void testMapWithIndex_longStream() {
-    SpliteratorTester.of(
-            () -> Streams.mapWithIndex(LongStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
-        .expect("0:0", "1:1", "2:2");
-  }
+    public void testMapWithIndex_unsizedSource() {
+        testMapWithIndex(elems -> Stream.of((Object) null).flatMap(unused -> ImmutableList.copyOf(elems).stream()));
+    }
 
-  public void testMapWithIndex_doubleStream() {
-    SpliteratorTester.of(
-            () ->
-                Streams.mapWithIndex(DoubleStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
-        .expect("0.0:0", "1.0:1", "2.0:2");
-  }
+    public void testMapWithIndex_intStream() {
+        SpliteratorTester.of(() -> Streams.mapWithIndex(IntStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
+                .expect("0:0", "1:1", "2:2");
+    }
 
-  public void testZip() {
-    assertThat(Streams.zip(Stream.of("a", "b", "c"), Stream.of(1, 2, 3), (a, b) -> a + ":" + b))
-        .containsExactly("a:1", "b:2", "c:3")
-        .inOrder();
-  }
+    public void testMapWithIndex_longStream() {
+        SpliteratorTester.of(() -> Streams.mapWithIndex(LongStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
+                .expect("0:0", "1:1", "2:2");
+    }
 
-  public void testZipFiniteWithInfinite() {
-    assertThat(
-            Streams.zip(
-                Stream.of("a", "b", "c"), Stream.iterate(1, i -> i + 1), (a, b) -> a + ":" + b))
-        .containsExactly("a:1", "b:2", "c:3")
-        .inOrder();
-  }
+    public void testMapWithIndex_doubleStream() {
+        SpliteratorTester.of(() -> Streams.mapWithIndex(DoubleStream.of(0, 1, 2), (x, i) -> x + ":" + i).spliterator())
+                .expect("0.0:0", "1.0:1", "2.0:2");
+    }
 
-  public void testZipInfiniteWithInfinite() {
-    // zip is doing an infinite zip, but we truncate the result so we can actually test it
-    // but we want the zip itself to work
-    assertThat(
-            Streams.zip(
-                    Stream.iterate(1, i -> i + 1).map(String::valueOf),
-                    Stream.iterate(1, i -> i + 1),
-                    (String str, Integer i) -> str.equals(Integer.toString(i)))
-                .limit(100))
-        .doesNotContain(false);
-  }
+    public void testZip() {
+        assertThat(Streams.zip(Stream.of("a", "b", "c"), Stream.of(1, 2, 3), (a, b) -> a + ":" + b))
+                .containsExactly("a:1", "b:2", "c:3").inOrder();
+    }
 
-  public void testZipDifferingLengths() {
-    assertThat(
-            Streams.zip(Stream.of("a", "b", "c", "d"), Stream.of(1, 2, 3), (a, b) -> a + ":" + b))
-        .containsExactly("a:1", "b:2", "c:3")
-        .inOrder();
-    assertThat(Streams.zip(Stream.of("a", "b", "c"), Stream.of(1, 2, 3, 4), (a, b) -> a + ":" + b))
-        .containsExactly("a:1", "b:2", "c:3")
-        .inOrder();
-  }
+    public void testZipFiniteWithInfinite() {
+        assertThat(Streams.zip(Stream.of("a", "b", "c"), Stream.iterate(1, i -> i + 1), (a, b) -> a + ":" + b))
+                .containsExactly("a:1", "b:2", "c:3").inOrder();
+    }
 
-  // TODO(kevinb): switch to importing Truth's assertThat(Stream) if we get that added
-  private static IterableSubject assertThat(Stream<?> stream) {
-    return Truth.assertThat(stream.toArray()).asList();
-  }
-  
-  private static IterableSubject assertThat(IntStream stream) {
-    return Truth.assertThat(stream.toArray()).asList();
-  }
+    public void testZipInfiniteWithInfinite() {
+        // zip is doing an infinite zip, but we truncate the result so we can actually test it
+        // but we want the zip itself to work
+        assertThat(Streams.zip(Stream.iterate(1, i -> i + 1).map(String::valueOf), Stream.iterate(1, i -> i + 1),
+                (String str, Integer i) -> str.equals(Integer.toString(i))).limit(100)).doesNotContain(false);
+    }
 
-  private static IterableSubject assertThat(LongStream stream) {
-    return Truth.assertThat(stream.toArray()).asList();
-  }
+    public void testZipDifferingLengths() {
+        assertThat(Streams.zip(Stream.of("a", "b", "c", "d"), Stream.of(1, 2, 3), (a, b) -> a + ":" + b))
+                .containsExactly("a:1", "b:2", "c:3").inOrder();
+        assertThat(Streams.zip(Stream.of("a", "b", "c"), Stream.of(1, 2, 3, 4), (a, b) -> a + ":" + b))
+                .containsExactly("a:1", "b:2", "c:3").inOrder();
+    }
 
-  private static IterableSubject assertThat(DoubleStream stream) {
-    return Truth.assertThat(Doubles.asList(stream.toArray()));
-  }
+    // TODO(kevinb): switch to importing Truth's assertThat(Stream) if we get that added
+    private static IterableSubject assertThat(Stream<?> stream) {
+        return Truth.assertThat(stream.toArray()).asList();
+    }
+
+    private static IterableSubject assertThat(IntStream stream) {
+        return Truth.assertThat(stream.toArray()).asList();
+    }
+
+    private static IterableSubject assertThat(LongStream stream) {
+        return Truth.assertThat(stream.toArray()).asList();
+    }
+
+    private static IterableSubject assertThat(DoubleStream stream) {
+        return Truth.assertThat(Doubles.asList(stream.toArray()));
+    }
 }

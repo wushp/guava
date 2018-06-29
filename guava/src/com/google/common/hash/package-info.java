@@ -16,7 +16,8 @@
 /**
  * Hash functions and related structures.
  *
- * <p>See the Guava User Guide article on
+ * <p>
+ * See the Guava User Guide article on
  * <a href="https://github.com/google/guava/wiki/HashingExplained">hashing</a>.
  */
 @CheckReturnValue

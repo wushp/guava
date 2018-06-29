@@ -6,10 +6,10 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.common.collect;
@@ -25,46 +25,46 @@ import javax.annotation.Nullable;
  */
 @GwtCompatible
 final class Count implements Serializable {
-  private int value;
+    private int value;
 
-  Count(int value) {
-    this.value = value;
-  }
+    Count(int value) {
+        this.value = value;
+    }
 
-  public int get() {
-    return value;
-  }
+    public int get() {
+        return value;
+    }
 
-  public void add(int delta) {
-    value += delta;
-  }
+    public void add(int delta) {
+        value += delta;
+    }
 
-  public int addAndGet(int delta) {
-    return value += delta;
-  }
+    public int addAndGet(int delta) {
+        return value += delta;
+    }
 
-  public void set(int newValue) {
-    value = newValue;
-  }
+    public void set(int newValue) {
+        value = newValue;
+    }
 
-  public int getAndSet(int newValue) {
-    int result = value;
-    value = newValue;
-    return result;
-  }
+    public int getAndSet(int newValue) {
+        int result = value;
+        value = newValue;
+        return result;
+    }
 
-  @Override
-  public int hashCode() {
-    return value;
-  }
+    @Override
+    public int hashCode() {
+        return value;
+    }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof Count && ((Count) obj).value == value;
-  }
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj instanceof Count && ((Count) obj).value == value;
+    }
 
-  @Override
-  public String toString() {
-    return Integer.toString(value);
-  }
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

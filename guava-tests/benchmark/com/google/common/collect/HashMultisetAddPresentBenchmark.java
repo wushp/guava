@@ -6,10 +6,10 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.common.collect;
@@ -26,29 +26,30 @@ import java.util.Random;
  * @author Louis Wasserman
  */
 public class HashMultisetAddPresentBenchmark {
-  private static final int ARRAY_MASK = 0x0ffff;
-  private static final int ARRAY_SIZE = 0x10000;
-  List<Multiset<Integer>> multisets = new ArrayList<Multiset<Integer>>(0x10000);
-  int[] queries = new int[ARRAY_SIZE];
+    private static final int ARRAY_MASK = 0x0ffff;
+    private static final int ARRAY_SIZE = 0x10000;
+    List<Multiset<Integer>> multisets = new ArrayList<Multiset<Integer>>(0x10000);
+    int[] queries = new int[ARRAY_SIZE];
 
-  @BeforeExperiment
-  void setUp() {
-    Random random = new Random();
-    multisets.clear();
-    for (int i = 0; i < ARRAY_SIZE; i++) {
-      HashMultiset<Integer> multiset = HashMultiset.<Integer>create();
-      multisets.add(multiset);
-      queries[i] = random.nextInt();
-      multiset.add(queries[i]);
+    @BeforeExperiment
+    void setUp() {
+        Random random = new Random();
+        multisets.clear();
+        for (int i = 0; i < ARRAY_SIZE; i++) {
+            HashMultiset<Integer> multiset = HashMultiset.<Integer>create();
+            multisets.add(multiset);
+            queries[i] = random.nextInt();
+            multiset.add(queries[i]);
+        }
     }
-  }
 
-  @Benchmark int add(int reps) {
-    int tmp = 0;
-    for (int i = 0; i < reps; i++) {
-      int j = i & ARRAY_MASK;
-      tmp += multisets.get(j).add(queries[j], 4);
+    @Benchmark
+    int add(int reps) {
+        int tmp = 0;
+        for (int i = 0; i < reps; i++) {
+            int j = i & ARRAY_MASK;
+            tmp += multisets.get(j).add(queries[j], 4);
+        }
+        return tmp;
     }
-    return tmp;
-  }
 }

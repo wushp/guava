@@ -25,19 +25,19 @@ import javax.annotation.Nullable;
  */
 @GwtIncompatible
 public class UncheckedTimeoutException extends RuntimeException {
-  public UncheckedTimeoutException() {}
+    public UncheckedTimeoutException() {}
 
-  public UncheckedTimeoutException(@Nullable String message) {
-    super(message);
-  }
+    public UncheckedTimeoutException(@Nullable String message) {
+        super(message);
+    }
 
-  public UncheckedTimeoutException(@Nullable Throwable cause) {
-    super(cause);
-  }
+    public UncheckedTimeoutException(@Nullable Throwable cause) {
+        super(cause);
+    }
 
-  public UncheckedTimeoutException(@Nullable String message, @Nullable Throwable cause) {
-    super(message, cause);
-  }
+    public UncheckedTimeoutException(@Nullable String message, @Nullable Throwable cause) {
+        super(message, cause);
+    }
 
-  private static final long serialVersionUID = 0;
+    private static final long serialVersionUID = 0;
 }

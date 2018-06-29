@@ -28,105 +28,111 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Provides supporting data for performance notes in the documentation of {@link
- * Ordering#sortedCopy} and {@link Ordering#immutableSortedCopy}, as well as for
- * automated code suggestions.
+ * Provides supporting data for performance notes in the documentation of
+ * {@link Ordering#sortedCopy} and {@link Ordering#immutableSortedCopy}, as well as for automated
+ * code suggestions.
  *
  */
 public class SortedCopyBenchmark {
-  @Param({"1", "10", "1000", "1000000"}) int size; // logarithmic triangular
+    @Param({"1", "10", "1000", "1000000"})
+    int size; // logarithmic triangular
 
-  @Param boolean mutable;
+    @Param
+    boolean mutable;
 
-  @Param InputOrder inputOrder;
+    @Param
+    InputOrder inputOrder;
 
-  enum InputOrder {
-    SORTED {
-      @Override void arrange(List<Integer> list) {
-        Collections.sort(list);
-      }
-    },
-    ALMOST_SORTED {
-      @Override void arrange(List<Integer> list) {
-        Collections.sort(list);
-        if (list.size() > 1) {
-          int i = (list.size() - 1) / 2;
-          Collections.swap(list, i, i + 1);
+    enum InputOrder {
+        SORTED {
+            @Override
+            void arrange(List<Integer> list) {
+                Collections.sort(list);
+            }
+        },
+        ALMOST_SORTED {
+            @Override
+            void arrange(List<Integer> list) {
+                Collections.sort(list);
+                if (list.size() > 1) {
+                    int i = (list.size() - 1) / 2;
+                    Collections.swap(list, i, i + 1);
+                }
+            }
+        },
+        RANDOM {
+            @Override
+            void arrange(List<Integer> list) {}
+        };
+
+        abstract void arrange(List<Integer> list);
+    }
+
+    private ImmutableList<Integer> input;
+
+    @BeforeExperiment
+    void setUp() {
+        checkArgument(size > 0, "empty collection not supported");
+        Set<Integer> set = new LinkedHashSet<Integer>(size);
+
+        Random random = new Random();
+        while (set.size() < size) {
+            set.add(random.nextInt());
         }
-      }
-    },
-    RANDOM {
-      @Override void arrange(List<Integer> list) {}
-    };
-
-    abstract void arrange(List<Integer> list);
-  }
-
-  private ImmutableList<Integer> input;
-
-  @BeforeExperiment
-  void setUp() {
-    checkArgument(size > 0, "empty collection not supported");
-    Set<Integer> set = new LinkedHashSet<Integer>(size);
-
-    Random random = new Random();
-    while (set.size() < size) {
-      set.add(random.nextInt());
+        List<Integer> list = new ArrayList<Integer>(set);
+        inputOrder.arrange(list);
+        input = ImmutableList.copyOf(list);
     }
-    List<Integer> list = new ArrayList<Integer>(set);
-    inputOrder.arrange(list);
-    input = ImmutableList.copyOf(list);
-  }
 
-  @Benchmark
-  int collections(int reps) {
-    int dummy = 0;
-    // Yes, this could be done more elegantly
-    if (mutable) {
-      for (int i = 0; i < reps; i++) {
-        List<Integer> copy = new ArrayList<Integer>(input);
-        Collections.sort(copy);
-        dummy += copy.get(0);
-      }
-    } else {
-      for (int i = 0; i < reps; i++) {
-        List<Integer> copy = new ArrayList<Integer>(input);
-        Collections.sort(copy);
-        dummy += ImmutableList.copyOf(copy).get(0);
-      }
+    @Benchmark
+    int collections(int reps) {
+        int dummy = 0;
+        // Yes, this could be done more elegantly
+        if (mutable) {
+            for (int i = 0; i < reps; i++) {
+                List<Integer> copy = new ArrayList<Integer>(input);
+                Collections.sort(copy);
+                dummy += copy.get(0);
+            }
+        } else {
+            for (int i = 0; i < reps; i++) {
+                List<Integer> copy = new ArrayList<Integer>(input);
+                Collections.sort(copy);
+                dummy += ImmutableList.copyOf(copy).get(0);
+            }
+        }
+        return dummy;
     }
-    return dummy;
-  }
 
-  @Benchmark
-  int ordering(int reps) {
-    int dummy = 0;
-    if (mutable) {
-      for (int i = 0; i < reps; i++) {
-        dummy += ORDERING.sortedCopy(input).get(0);
-      }
-    } else {
-      for (int i = 0; i < reps; i++) {
-        dummy += ORDERING.immutableSortedCopy(input).get(0);
-      }
+    @Benchmark
+    int ordering(int reps) {
+        int dummy = 0;
+        if (mutable) {
+            for (int i = 0; i < reps; i++) {
+                dummy += ORDERING.sortedCopy(input).get(0);
+            }
+        } else {
+            for (int i = 0; i < reps; i++) {
+                dummy += ORDERING.immutableSortedCopy(input).get(0);
+            }
+        }
+        return dummy;
     }
-    return dummy;
-  }
 
-  @Benchmark
-  int sortedSet(int reps) {
-    int dummy = 0;
-    if (mutable) {
-      for (int i = 0; i < reps; i++) {
-        dummy += new TreeSet<Integer>(input).first();
-      }
-    } else {
-      for (int i = 0; i < reps; i++) {
-        dummy += ImmutableSortedSet.copyOf(input).first();
-      }
+    @Benchmark
+    int sortedSet(int reps) {
+        int dummy = 0;
+        if (mutable) {
+            for (int i = 0; i < reps; i++) {
+                dummy += new TreeSet<Integer>(input).first();
+            }
+        } else {
+            for (int i = 0; i < reps; i++) {
+                dummy += ImmutableSortedSet.copyOf(input).first();
+            }
+        }
+        return dummy;
     }
-    return dummy;
-  }
 
-  private static final Ordering<Integer> ORDERING = Ordering.natural();
+    private static final Ordering<Integer> ORDERING = Ordering.natural();
 }

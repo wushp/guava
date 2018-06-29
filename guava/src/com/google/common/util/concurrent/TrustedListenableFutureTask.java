@@ -26,103 +26,103 @@ import javax.annotation.Nullable;
 /**
  * A {@link RunnableFuture} that also implements the {@link ListenableFuture} interface.
  *
- * <p>This should be used in preference to {@link ListenableFutureTask} when possible for
- * performance reasons.
+ * <p>
+ * This should be used in preference to {@link ListenableFutureTask} when possible for performance
+ * reasons.
  */
 @GwtCompatible
-class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V>
-    implements RunnableFuture<V> {
+class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V> implements RunnableFuture<V> {
 
-  /**
-   * Creates a {@code ListenableFutureTask} that will upon running, execute the given
-   * {@code Callable}.
-   *
-   * @param callable the callable task
-   */
-  static <V> TrustedListenableFutureTask<V> create(Callable<V> callable) {
-    return new TrustedListenableFutureTask<V>(callable);
-  }
-
-  /**
-   * Creates a {@code ListenableFutureTask} that will upon running, execute the given
-   * {@code Runnable}, and arrange that {@code get} will return the given result on successful
-   * completion.
-   *
-   * @param runnable the runnable task
-   * @param result the result to return on successful completion. If you don't need a particular
-   *     result, consider using constructions of the form:
-   *     {@code ListenableFuture<?> f = ListenableFutureTask.create(runnable,
-   *     null)}
-   */
-  static <V> TrustedListenableFutureTask<V> create(Runnable runnable, @Nullable V result) {
-    return new TrustedListenableFutureTask<V>(Executors.callable(runnable, result));
-  }
-
-  /*
-   * In certain circumstances, this field might theoretically not be visible to an afterDone() call
-   * triggered by cancel(). For details, see the comments on the fields of TimeoutFuture.
-   */
-  private TrustedFutureInterruptibleTask task;
-
-  TrustedListenableFutureTask(Callable<V> callable) {
-    this.task = new TrustedFutureInterruptibleTask(callable);
-  }
-
-  @Override
-  public void run() {
-    TrustedFutureInterruptibleTask localTask = task;
-    if (localTask != null) {
-      localTask.run();
-    }
-  }
-
-  @Override
-  protected void afterDone() {
-    super.afterDone();
-
-    if (wasInterrupted()) {
-      TrustedFutureInterruptibleTask localTask = task;
-      if (localTask != null) {
-        localTask.interruptTask();
-      }
+    /**
+     * Creates a {@code ListenableFutureTask} that will upon running, execute the given
+     * {@code Callable}.
+     *
+     * @param callable the callable task
+     */
+    static <V> TrustedListenableFutureTask<V> create(Callable<V> callable) {
+        return new TrustedListenableFutureTask<V>(callable);
     }
 
-    this.task = null;
-  }
+    /**
+     * Creates a {@code ListenableFutureTask} that will upon running, execute the given
+     * {@code Runnable}, and arrange that {@code get} will return the given result on successful
+     * completion.
+     *
+     * @param runnable the runnable task
+     * @param result the result to return on successful completion. If you don't need a particular
+     *        result, consider using constructions of the form:
+     *        {@code ListenableFuture<?> f = ListenableFutureTask.create(runnable,
+     *     null)}
+     */
+    static <V> TrustedListenableFutureTask<V> create(Runnable runnable, @Nullable V result) {
+        return new TrustedListenableFutureTask<V>(Executors.callable(runnable, result));
+    }
 
-  @Override
-  public String toString() {
-    return super.toString() + " (delegate = " + task + ")";
-  }
+    /*
+     * In certain circumstances, this field might theoretically not be visible to an afterDone()
+     * call triggered by cancel(). For details, see the comments on the fields of TimeoutFuture.
+     */
+    private TrustedFutureInterruptibleTask task;
 
-  @WeakOuter
-  private final class TrustedFutureInterruptibleTask extends InterruptibleTask {
-    private final Callable<V> callable;
-
-    TrustedFutureInterruptibleTask(Callable<V> callable) {
-      this.callable = checkNotNull(callable);
+    TrustedListenableFutureTask(Callable<V> callable) {
+        this.task = new TrustedFutureInterruptibleTask(callable);
     }
 
     @Override
-    void runInterruptibly() {
-      // Ensure we haven't been cancelled or already run.
-      if (!isDone()) {
-        try {
-          set(callable.call());
-        } catch (Throwable t) {
-          setException(t);
+    public void run() {
+        TrustedFutureInterruptibleTask localTask = task;
+        if (localTask != null) {
+            localTask.run();
         }
-      }
     }
 
     @Override
-    boolean wasInterrupted() {
-      return TrustedListenableFutureTask.this.wasInterrupted();
+    protected void afterDone() {
+        super.afterDone();
+
+        if (wasInterrupted()) {
+            TrustedFutureInterruptibleTask localTask = task;
+            if (localTask != null) {
+                localTask.interruptTask();
+            }
+        }
+
+        this.task = null;
     }
 
     @Override
     public String toString() {
-      return callable.toString();
+        return super.toString() + " (delegate = " + task + ")";
     }
-  }
+
+    @WeakOuter
+    private final class TrustedFutureInterruptibleTask extends InterruptibleTask {
+        private final Callable<V> callable;
+
+        TrustedFutureInterruptibleTask(Callable<V> callable) {
+            this.callable = checkNotNull(callable);
+        }
+
+        @Override
+        void runInterruptibly() {
+            // Ensure we haven't been cancelled or already run.
+            if (!isDone()) {
+                try {
+                    set(callable.call());
+                } catch (Throwable t) {
+                    setException(t);
+                }
+            }
+        }
+
+        @Override
+        boolean wasInterrupted() {
+            return TrustedListenableFutureTask.this.wasInterrupted();
+        }
+
+        @Override
+        public String toString() {
+            return callable.toString();
+        }
+    }
 }

@@ -16,10 +16,12 @@
  * Static utilities for working with the eight primitive types and {@code void}, and value types for
  * treating them as unsigned.
  *
- * <p>This package is a part of the open-source <a href="http://github.com/google/guava">Guava</a>
+ * <p>
+ * This package is a part of the open-source <a href="http://github.com/google/guava">Guava</a>
  * library.
  *
- * <p>See the Guava User Guide article on
+ * <p>
+ * See the Guava User Guide article on
  * <a href="https://github.com/google/guava/wiki/PrimitivesExplained">primitive utilities</a>.
  *
  * <h2>Contents</h2>
@@ -35,21 +37,21 @@
  * <ul>
  * <li>{@link com.google.common.primitives.Booleans}
  * <li>{@link com.google.common.primitives.Bytes}
- *     <ul>
- *     <li>{@link com.google.common.primitives.SignedBytes}
- *     <li>{@link com.google.common.primitives.UnsignedBytes}
- *     </ul>
+ * <ul>
+ * <li>{@link com.google.common.primitives.SignedBytes}
+ * <li>{@link com.google.common.primitives.UnsignedBytes}
+ * </ul>
  * <li>{@link com.google.common.primitives.Chars}
  * <li>{@link com.google.common.primitives.Doubles}
  * <li>{@link com.google.common.primitives.Floats}
  * <li>{@link com.google.common.primitives.Ints}
- *     <ul>
- *     <li>{@link com.google.common.primitives.UnsignedInts}
- *     </ul>
+ * <ul>
+ * <li>{@link com.google.common.primitives.UnsignedInts}
+ * </ul>
  * <li>{@link com.google.common.primitives.Longs}
- *     <ul>
- *     <li>{@link com.google.common.primitives.UnsignedLongs}
- *     </ul>
+ * <ul>
+ * <li>{@link com.google.common.primitives.UnsignedLongs}
+ * </ul>
  * <li>{@link com.google.common.primitives.Shorts}
  * </ul>
  *

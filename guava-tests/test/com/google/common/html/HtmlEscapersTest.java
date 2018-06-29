@@ -27,36 +27,34 @@ import junit.framework.TestCase;
 @GwtCompatible
 public class HtmlEscapersTest extends TestCase {
 
-  public void testHtmlEscaper() throws Exception {
-    assertEquals("xxx", htmlEscaper().escape("xxx"));
-    assertEquals("&quot;test&quot;", htmlEscaper().escape("\"test\""));
-    assertEquals("&#39;test&#39;", htmlEscaper().escape("\'test'"));
-    assertEquals("test &amp; test &amp; test", htmlEscaper().escape("test & test & test"));
-    assertEquals("test &lt;&lt; 1", htmlEscaper().escape("test << 1"));
-    assertEquals("test &gt;&gt; 1", htmlEscaper().escape("test >> 1"));
-    assertEquals("&lt;tab&gt;", htmlEscaper().escape("<tab>"));
+    public void testHtmlEscaper() throws Exception {
+        assertEquals("xxx", htmlEscaper().escape("xxx"));
+        assertEquals("&quot;test&quot;", htmlEscaper().escape("\"test\""));
+        assertEquals("&#39;test&#39;", htmlEscaper().escape("\'test'"));
+        assertEquals("test &amp; test &amp; test", htmlEscaper().escape("test & test & test"));
+        assertEquals("test &lt;&lt; 1", htmlEscaper().escape("test << 1"));
+        assertEquals("test &gt;&gt; 1", htmlEscaper().escape("test >> 1"));
+        assertEquals("&lt;tab&gt;", htmlEscaper().escape("<tab>"));
 
-    // Test simple escape of '&'.
-    assertEquals("foo&amp;bar", htmlEscaper().escape("foo&bar"));
+        // Test simple escape of '&'.
+        assertEquals("foo&amp;bar", htmlEscaper().escape("foo&bar"));
 
-    // If the string contains no escapes, it should return the arg.
-    // Note: assert<b>Same</b> for this implementation.
-    String s = "blah blah farhvergnugen";
-    assertSame(s, htmlEscaper().escape(s));
+        // If the string contains no escapes, it should return the arg.
+        // Note: assert<b>Same</b> for this implementation.
+        String s = "blah blah farhvergnugen";
+        assertSame(s, htmlEscaper().escape(s));
 
-    // Tests escapes at begin and end of string.
-    assertEquals("&lt;p&gt;", htmlEscaper().escape("<p>"));
+        // Tests escapes at begin and end of string.
+        assertEquals("&lt;p&gt;", htmlEscaper().escape("<p>"));
 
-    // Test all escapes.
-    assertEquals("a&quot;b&lt;c&gt;d&amp;", htmlEscaper().escape("a\"b<c>d&"));
+        // Test all escapes.
+        assertEquals("a&quot;b&lt;c&gt;d&amp;", htmlEscaper().escape("a\"b<c>d&"));
 
-    // Test two escapes in a row.
-    assertEquals("foo&amp;&amp;bar", htmlEscaper().escape("foo&&bar"));
+        // Test two escapes in a row.
+        assertEquals("foo&amp;&amp;bar", htmlEscaper().escape("foo&&bar"));
 
-    // Test many non-escaped characters.
-    s = "!@#$%^*()_+=-/?\\|]}[{,.;:"
-        + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        + "1234567890";
-    assertSame(s, htmlEscaper().escape(s));
-  }
+        // Test many non-escaped characters.
+        s = "!@#$%^*()_+=-/?\\|]}[{,.;:" + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + "1234567890";
+        assertSame(s, htmlEscaper().escape(s));
+    }
 }
